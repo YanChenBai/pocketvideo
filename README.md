@@ -1,30 +1,41 @@
 # PocketVideo
 
-A Vite+ monorepo for a PocketJS-inspired video rendering framework. The first
-package, `@pocketvideo/core`, owns composition time and evaluates every frame
-without a browser clock. Renderers, video/audio tracks and encoders can be added
-as separate packages on top of its track protocol.
+[English](./README.en.md) | 简体中文
+
+一个受 PocketJS 启发的确定性、渲染器无关视频渲染框架，使用 TypeScript、
+Vite+ 和 Bun 构建。
+
+> 项目目前处于早期开发阶段，现阶段仅实现时间轴核心，尚不包含像素渲染、
+> 媒体解码与视频编码。
+
+## 核心目标
+
+- 使用 Vue Vapor、Solid 或其他声明式组件描述视频画面。
+- 不依赖浏览器时钟，支持确定性的任意帧渲染。
+- 将渲染核心、音频轨、视频轨和编码器保持为独立包。
+- 支持 GSAP、Motion 风格动画，但由 PocketVideo 统一控制播放头。
+- 为并行渲染、分片渲染和原生 GPU 后端保留扩展能力。
+
+## 当前能力
+
+- 精确的有理数帧率与时间戳，包括 `30000/1001`。
+- Composition 与左闭右开的轨道区间。
+- `inPoint`、`playbackRate` 和轨道局部时间映射。
+- 稳定的画面层级排序。
+- 面向 GSAP、Motion 和原生动画的无时钟 `AnimationDriver` 协议。
+- 渲染器无关、类型安全的 `TrackOutput`。
+
+## 仓库结构
 
 ```text
 packages/
-  core/       deterministic timeline and track protocol
-  video/      future video/image tracks
-  audio/      future audio tracks and mixing
-  exporter/   future rendering and encoding coordinator
+  core/       确定性时间轴与轨道协议
+  video/      视频与图片轨道（计划中）
+  audio/      音频轨道与混音（计划中）
+  exporter/   渲染与编码调度（计划中）
 ```
 
-## Current scope
-
-- Exact rational frame rates and timestamps, including `30000/1001`.
-- Composition and half-open track ranges.
-- Track-local `inPoint` and `playbackRate` mapping.
-- Stable layer ordering.
-- A clockless animation-driver boundary for GSAP/Motion-compatible adapters.
-- Renderer-agnostic typed outputs.
-
-It does not render pixels or decode media yet.
-
-## Example
+## 示例
 
 ```ts
 import { defineComposition, frameRate, type Track, type TrackOutput } from "@pocketvideo/core";
@@ -59,15 +70,42 @@ const composition = defineComposition(
 const frame = await composition.renderFrame(45);
 ```
 
-An animation adapter implements `AnimationDriver.evaluate(localTime, sink)` and
-must remain paused. For example, a future GSAP adapter will seek a paused GSAP
-timeline to `localTime.toNumber()` and copy the resulting values into `sink`.
+动画适配器需要实现：
 
-## Development
+```ts
+interface AnimationDriver {
+  evaluate(time: Time, sink: AnimationPropertySink): void;
+  dispose?(): void;
+}
+```
 
-Requires Bun 1.3.14 and Vite+ 0.2.5.
+适配器本身不能持有实时播放时钟。例如 GSAP 适配器应创建暂停的 Timeline，
+根据 `time` 主动移动播放头，再将计算结果写入 `sink`。
+
+## 开发
+
+需要 Bun 1.3.14 和 Vite+ 0.2.5。
 
 ```bash
 bun install
 bun run ready
 ```
+
+`ready` 会依次执行格式检查、Lint、类型检查、单元测试和构建。
+
+## 路线图
+
+- [x] 精确时间与帧率模型
+- [x] Composition 与通用轨道协议
+- [x] 动画驱动协议
+- [ ] 视频与图片轨道
+- [ ] 音频轨道与混音
+- [ ] PocketJS/Rust 渲染后端
+- [ ] Vue Vapor 与 Solid 组件适配器
+- [ ] GSAP 与 Motion 适配器
+- [ ] FFmpeg 导出器
+- [ ] 实时预览与开发工具
+
+## 许可证
+
+[MIT](./LICENSE) © PocketVideo contributors
