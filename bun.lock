@@ -9,6 +9,17 @@
         "vite-plus": "catalog:",
       },
     },
+    "apps/demo": {
+      "name": "@pocketvideo/demo",
+      "version": "0.1.0",
+      "dependencies": {
+        "@pocketvideo/core": "workspace:*",
+      },
+      "devDependencies": {
+        "typescript": "^7.0.2",
+        "vite-plus": "catalog:",
+      },
+    },
     "packages/core": {
       "name": "@pocketvideo/core",
       "version": "0.1.0",
@@ -133,6 +144,8 @@
     "@oxlint/plugins": ["@oxlint/plugins@1.73.0", "", {}, "sha512-OhgMQeMmZA0dcFcX4/priaJZWdFECxiClgq6mRX6aatZEcV9PbKC3P3/v8U1hVjviT1i5U+vR8lAtBV6m4FXAA=="],
 
     "@pocketvideo/core": ["@pocketvideo/core@workspace:packages/core"],
+
+    "@pocketvideo/demo": ["@pocketvideo/demo@workspace:apps/demo"],
 
     "@polka/url": ["@polka/url@1.0.0-next.29", "", {}, "sha512-wwQAWhWSuHaag8c4q/KN/vCoeOJYshAIvMQwD4GpSb3OiZklFfvAgmj0VCBBImRpuF/aFgIRzllXlVX93Jevww=="],
 

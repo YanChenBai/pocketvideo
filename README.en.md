@@ -33,6 +33,8 @@ packages/
   video/      video and image tracks (planned)
   audio/      audio tracks and mixing (planned)
   exporter/   rendering and encoding orchestration (planned)
+apps/
+  demo/       Canvas live preview and timeline inspector
 ```
 
 ## Example
@@ -70,6 +72,20 @@ const composition = defineComposition(
 const frame = await composition.renderFrame(45);
 ```
 
+## Interactive demo
+
+The repository includes a browser demo powered by the existing core. It draws
+Composition track outputs to Canvas and provides playback, frame stepping,
+timeline scrubbing, and an active-track inspector.
+
+```bash
+bun install
+bun run dev
+```
+
+Open the local URL printed in the terminal. Use Space to play or pause, and the
+left and right arrow keys to step through frames.
+
 Animation adapters implement:
 
 ```ts
@@ -106,7 +122,8 @@ build.
 - [ ] Vue Vapor and Solid component adapters
 - [ ] GSAP and Motion adapters
 - [ ] FFmpeg exporter
-- [ ] Live preview and development tools
+- [x] Basic Canvas live preview
+- [ ] Full development tools
 
 ## License
 

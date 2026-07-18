@@ -33,6 +33,8 @@ packages/
   video/      视频与图片轨道（计划中）
   audio/      音频轨道与混音（计划中）
   exporter/   渲染与编码调度（计划中）
+apps/
+  demo/       Canvas 实时预览与时间轴检查器
 ```
 
 ## 示例
@@ -70,6 +72,18 @@ const composition = defineComposition(
 const frame = await composition.renderFrame(45);
 ```
 
+## 交互式演示
+
+仓库内置了一个基于现有核心的网页 Demo。它将 Composition 的轨道输出绘制到
+Canvas，并提供播放、逐帧、拖拽时间轴和活动轨道检查器。
+
+```bash
+bun install
+bun run dev
+```
+
+打开终端中显示的本地地址即可预览。空格键控制播放或暂停，左右方向键用于逐帧。
+
 动画适配器需要实现：
 
 ```ts
@@ -104,7 +118,8 @@ bun run ready
 - [ ] Vue Vapor 与 Solid 组件适配器
 - [ ] GSAP 与 Motion 适配器
 - [ ] FFmpeg 导出器
-- [ ] 实时预览与开发工具
+- [x] 基础 Canvas 实时预览
+- [ ] 完整开发工具
 
 ## 许可证
 

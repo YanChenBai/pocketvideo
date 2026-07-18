@@ -10,6 +10,7 @@
   "type": "module",
   "scripts": {
     "ready": "vp check && vp run -r --no-cache test && vp run -r --no-cache build",
+    "dev": "vp run --no-cache @pocketvideo/demo#dev",
     "test": "vp run -r --no-cache test",
     "build": "vp run -r --no-cache build",
     "check": "vp check"
