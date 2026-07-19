@@ -1,0 +1,31 @@
+{
+  "name": "@pocketvideo/renderer-skia",
+  "version": "0.1.0",
+  "description": "A deterministic Skia Canvas renderer for PocketVideo on Node.js.",
+  "license": "MIT",
+  "files": [
+    "dist"
+  ],
+  "type": "module",
+  "exports": {
+    ".": "./dist/index.mjs",
+    "./package.json": "./package.json"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "vp pack",
+    "test": "vp test",
+    "check": "vp check",
+    "prepublishOnly": "vp run build"
+  },
+  "dependencies": {
+    "skia-canvas": "^3.0.8"
+  },
+  "devDependencies": {
+    "@types/node": "^26.1.1",
+    "typescript": "^7.0.2",
+    "vite-plus": "catalog:"
+  }
+}

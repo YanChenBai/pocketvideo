@@ -1,0 +1,19 @@
+{
+  "name": "@pocketvideo/render-skia",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@pocketvideo/core": "workspace:*",
+    "@pocketvideo/demo": "workspace:*",
+    "@pocketvideo/exporter-ffmpeg": "workspace:*",
+    "@pocketvideo/renderer-skia": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "^26.1.1",
+    "typescript": "^7.0.2"
+  }
+}

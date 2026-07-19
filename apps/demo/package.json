@@ -3,6 +3,10 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
+  "exports": {
+    "./composition": "./src/composition.ts",
+    "./renderer": "./src/renderer.ts"
+  },
   "scripts": {
     "dev": "vp dev",
     "build": "tsc && vp build",

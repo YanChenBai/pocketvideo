@@ -168,8 +168,11 @@ function assertNever(value: never): never {
 export function renderFrameToCanvas(
   context: CanvasRenderingContext2D,
   frame: RenderedFrame<DemoLayer>,
+  options: { readonly clear?: boolean } = {},
 ): void {
-  context.clearRect(0, 0, VIDEO_WIDTH, VIDEO_HEIGHT);
+  if (options.clear ?? true) {
+    context.clearRect(0, 0, VIDEO_WIDTH, VIDEO_HEIGHT);
+  }
 
   for (const track of frame.tracks) {
     const layer = track.output;

@@ -5,8 +5,9 @@ English | [简体中文](./README.md)
 A deterministic, renderer-agnostic video rendering framework inspired by
 PocketJS, built with TypeScript, Vite+, and Bun.
 
-> PocketVideo is in early development. Only the timeline core is implemented;
-> pixel rendering, media decoding, and video encoding are not available yet.
+> PocketVideo is in early development. Its deterministic timeline, browser
+> preview, Node/Skia pixel renderer, and basic FFmpeg video encoder now run end
+> to end. Media decoding and audio mixing are still planned.
 
 ## Goals
 
@@ -24,17 +25,22 @@ PocketJS, built with TypeScript, Vite+, and Bun.
 - Stable visual layer ordering.
 - A clockless `AnimationDriver` contract for GSAP, Motion, and native adapters.
 - Renderer-agnostic, type-safe `TrackOutput` values.
+- A Node Canvas2D renderer powered by `skia-canvas` (not `@napi-rs/canvas`).
+- PNG frames, packed Raw RGBA frames, and direct H.264 MP4 encoding through FFmpeg.
 
 ## Repository structure
 
 ```text
 packages/
   core/       deterministic timeline and track protocol
+  renderer-skia/ Node/Skia Canvas2D with PNG and RGBA output
+  exporter-ffmpeg/ Raw RGBA to FFmpeg encoding pipeline
   video/      video and image tracks (planned)
   audio/      audio tracks and mixing (planned)
-  exporter/   rendering and encoding orchestration (planned)
 apps/
   demo/       Canvas live preview and timeline inspector
+tools/
+  render-skia/ export the same demo composition to PNG or MP4
 ```
 
 ## Example
@@ -88,6 +94,38 @@ bun run dev
 Open the local URL printed in the terminal. Use Space to play or pause, and the
 left and right arrow keys to step through frames.
 
+## Node / Skia export
+
+The Node renderer does not launch a browser. `render-skia` evaluates the same
+Composition used by the web demo, draws a server-side Aurora layout with Skia,
+and reuses the Canvas2D overlay. Browser preview, PNG, and MP4 therefore share
+one deterministic timeline.
+
+```bash
+# Frame 120 as PNG
+bun run render:image -- --frame 120
+
+# Full 10-second / 300-frame MP4
+bun run render:video
+
+# Encode a shorter range for a quick check
+bun run render:video -- --from 60 --frames 90 --output artifacts/clip.mp4
+```
+
+The video pipeline is:
+
+```text
+Composition frame → Skia Canvas2D → packed RGBA Buffer
+                  → FFmpeg stdin (rawvideo/rgba) → H.264/yuv420p MP4
+```
+
+FFmpeg resolution checks an explicit `--ffmpeg` path,
+`POCKETVIDEO_FFMPEG_PATH`, custom `FfmpegBinaryProvider` instances, and the
+system `PATH`, in that order. The repository does not bundle a large
+platform-specific binary, but the provider contract lets a host supply one.
+Skia video export uses its CPU backend by default to avoid a GPU-to-CPU readback
+for every RGBA frame.
+
 Animation adapters implement:
 
 ```ts
@@ -120,10 +158,10 @@ build.
 - [x] Animation driver contract
 - [ ] Video and image tracks
 - [ ] Audio tracks and mixing
-- [ ] PocketJS/Rust rendering backend
+- [x] Node/Skia Canvas2D rendering backend
 - [ ] Vue Vapor and Solid component adapters
 - [ ] GSAP and Motion adapters
-- [ ] FFmpeg exporter
+- [x] Basic Raw RGBA/FFmpeg exporter
 - [x] Basic Canvas live preview
 - [ ] Full development tools
 

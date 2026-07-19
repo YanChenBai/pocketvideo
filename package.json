@@ -11,6 +11,8 @@
   "scripts": {
     "ready": "vp check && vp run -r --no-cache test && vp run -r --no-cache build",
     "dev": "vp run --no-cache @pocketvideo/demo#dev",
+    "render:image": "bun tools/render-skia/src/cli.ts image",
+    "render:video": "bun tools/render-skia/src/cli.ts video",
     "test": "vp run -r --no-cache test",
     "build": "vp run -r --no-cache build",
     "check": "vp check"
@@ -36,5 +38,8 @@
   "catalog": {
     "vite": "npm:@voidzero-dev/vite-plus-core@0.2.5",
     "vite-plus": "0.2.5"
-  }
+  },
+  "trustedDependencies": [
+    "skia-canvas"
+  ]
 }

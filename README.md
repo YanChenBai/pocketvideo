@@ -5,8 +5,8 @@
 一个受 PocketJS 启发的确定性、渲染器无关视频渲染框架，使用 TypeScript、
 Vite+ 和 Bun 构建。
 
-> 项目目前处于早期开发阶段，现阶段仅实现时间轴核心，尚不包含像素渲染、
-> 媒体解码与视频编码。
+> 项目目前处于早期开发阶段。确定性时间轴、浏览器预览、Node/Skia 像素渲染和
+> 基础 FFmpeg 视频编码已经可以端到端运行；媒体解码与音频混音仍在规划中。
 
 ## 核心目标
 
@@ -24,17 +24,22 @@ Vite+ 和 Bun 构建。
 - 稳定的画面层级排序。
 - 面向 GSAP、Motion 和原生动画的无时钟 `AnimationDriver` 协议。
 - 渲染器无关、类型安全的 `TrackOutput`。
+- 基于 `skia-canvas`（非 `@napi-rs/canvas`）的 Node Canvas2D 渲染器。
+- 单帧 PNG、Raw RGBA 帧，以及通过 FFmpeg stdin 直出的 H.264 MP4。
 
 ## 仓库结构
 
 ```text
 packages/
   core/       确定性时间轴与轨道协议
+  renderer-skia/ Node/Skia Canvas2D 与 PNG、RGBA 输出
+  exporter-ffmpeg/ Raw RGBA 到 FFmpeg 的编码管道
   video/      视频与图片轨道（计划中）
   audio/      音频轨道与混音（计划中）
-  exporter/   渲染与编码调度（计划中）
 apps/
   demo/       Canvas 实时预览与时间轴检查器
+tools/
+  render-skia/ 将同一 Demo composition 导出为 PNG 或 MP4
 ```
 
 ## 示例
@@ -86,6 +91,35 @@ bun run dev
 
 打开终端中显示的本地地址即可预览。空格键控制播放或暂停，左右方向键用于逐帧。
 
+## Node / Skia 导出
+
+Node 渲染不启动浏览器。`render-skia` 读取与网页 Demo 相同的 Composition，使用
+Skia 绘制服务端 Aurora layout 和共享 Canvas2D overlay。每次调用都由指定帧号
+求值，因此预览、PNG 和 MP4 使用同一个确定性时间轴。
+
+```bash
+# 第 120 帧 PNG
+bun run render:image -- --frame 120
+
+# 完整 10 秒 / 300 帧 MP4
+bun run render:video
+
+# 只编码一段，便于快速验证
+bun run render:video -- --from 60 --frames 90 --output artifacts/clip.mp4
+```
+
+视频链路为：
+
+```text
+Composition frame → Skia Canvas2D → packed RGBA Buffer
+                  → FFmpeg stdin (rawvideo/rgba) → H.264/yuv420p MP4
+```
+
+FFmpeg 按显式 `--ffmpeg`、`POCKETVIDEO_FFMPEG_PATH`、自定义
+`FfmpegBinaryProvider`、系统 `PATH` 的顺序查找。仓库不直接捆绑大型平台二进制，
+但 provider 接口允许宿主接入随应用分发的 FFmpeg。Skia 视频导出默认使用 CPU
+后端，以避免逐帧读取 RGBA 时产生额外的 GPU 到 CPU 回读。
+
 动画适配器需要实现：
 
 ```ts
@@ -116,10 +150,10 @@ bun run ready
 - [x] 动画驱动协议
 - [ ] 视频与图片轨道
 - [ ] 音频轨道与混音
-- [ ] PocketJS/Rust 渲染后端
+- [x] Node/Skia Canvas2D 渲染后端
 - [ ] Vue Vapor 与 Solid 组件适配器
 - [ ] GSAP 与 Motion 适配器
-- [ ] FFmpeg 导出器
+- [x] Raw RGBA/FFmpeg 基础导出器
 - [x] 基础 Canvas 实时预览
 - [ ] 完整开发工具
 
