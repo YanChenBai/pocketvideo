@@ -14,6 +14,7 @@ import {
 } from "./composition.ts";
 import type { ExportScene } from "./composition.ts";
 import VideoComposition from "./VideoComposition.vue";
+import videoCompositionSource from "./VideoComposition.vue?raw";
 
 const app = document.querySelector<HTMLDivElement>("#app");
 if (!app) throw new TypeError("Missing #app element.");
@@ -95,6 +96,20 @@ app.innerHTML = `
         </aside>
       </section>
 
+      <section class="source-panel panel" aria-labelledby="source-title">
+        <div class="source-heading">
+          <div>
+            <span class="panel-kicker">VUE VAPOR SOURCE</span>
+            <strong id="source-title">VideoComposition.vue</strong>
+          </div>
+          <div class="source-actions">
+            <code>${videoCompositionSource.split("\n").length} lines</code>
+            <button id="copy-source" type="button">Copy source</button>
+          </div>
+        </div>
+        <pre class="source-code" tabindex="0"><code id="composition-source"></code></pre>
+      </section>
+
       <footer>
         <span>Composition</span><i></i><span>Canvas 2D</span><i></i><span>VideoEncoder</span><i></i><span>MP4</span>
       </footer>
@@ -107,6 +122,17 @@ function requiredElement<T extends Element>(selector: string): T {
   if (!element) throw new TypeError(`Missing element: ${selector}.`);
   return element;
 }
+
+const compositionSource = requiredElement<HTMLElement>("#composition-source");
+const copySourceButton = requiredElement<HTMLButtonElement>("#copy-source");
+compositionSource.textContent = videoCompositionSource.trim();
+copySourceButton.addEventListener("click", async () => {
+  await navigator.clipboard.writeText(videoCompositionSource);
+  copySourceButton.textContent = "Copied";
+  window.setTimeout(() => {
+    copySourceButton.textContent = "Copy source";
+  }, 1_500);
+});
 
 const previewCanvas = requiredElement<HTMLCanvasElement>("#preview");
 const previewContext = previewCanvas.getContext("2d");
