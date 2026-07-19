@@ -12,6 +12,7 @@ export const VIDEO_WIDTH = 1280;
 export const VIDEO_HEIGHT = 720;
 export const VIDEO_FPS = 30;
 export const VIDEO_DURATION = 300;
+export const AURORA_COLOR_STOPS = ["#1E1B4B", "#8B5CF6", "#22D3EE"] as const;
 
 export interface BackgroundLayer extends TrackOutput {
   readonly type: "background";
@@ -131,9 +132,9 @@ const tracks: readonly Track<DemoLayer>[] = [
     evaluate: ({ localTime }) => ({
       type: "ogl-aurora",
       time: localTime.toNumber(),
-      amplitude: 1,
-      blend: 0.52,
-      colorStops: ["#171D22", "#7CFF67", "#171D22"],
+      amplitude: 0.82,
+      blend: 0.68,
+      colorStops: AURORA_COLOR_STOPS,
     }),
   },
   {

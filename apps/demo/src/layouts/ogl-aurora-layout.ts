@@ -1,6 +1,6 @@
 import type { RenderedFrame } from "@pocketvideo/core";
 import { Color, Mesh, Program, Renderer, Triangle } from "ogl";
-import type { AuroraLayer, DemoLayer } from "../composition.ts";
+import { AURORA_COLOR_STOPS, type AuroraLayer, type DemoLayer } from "../composition.ts";
 
 const VERTEX_SHADER = `#version 300 es
 in vec2 position;
@@ -155,10 +155,10 @@ export class OglAuroraLayout {
       fragment: FRAGMENT_SHADER,
       uniforms: {
         uTime: { value: 0 },
-        uAmplitude: { value: 1 },
-        uColorStops: { value: colorStopsValue(["#171D22", "#7CFF67", "#171D22"]) },
+        uAmplitude: { value: 0.82 },
+        uColorStops: { value: colorStopsValue(AURORA_COLOR_STOPS) },
         uResolution: { value: [width, height] },
-        uBlend: { value: 0.5 },
+        uBlend: { value: 0.68 },
       },
     });
     this.mesh = new Mesh(gl, { geometry, program: this.program });
