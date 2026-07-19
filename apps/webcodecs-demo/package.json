@@ -1,0 +1,19 @@
+{
+  "name": "@pocketvideo/webcodecs-demo",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vp dev",
+    "build": "tsc && vp build",
+    "preview": "vp preview"
+  },
+  "dependencies": {
+    "@pocketvideo/core": "workspace:*",
+    "@pocketvideo/exporter-webcodecs": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "^7.0.2",
+    "vite-plus": "catalog:"
+  }
+}

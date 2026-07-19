@@ -11,6 +11,7 @@
   "scripts": {
     "ready": "vp check && vp run -r --no-cache test && vp run -r --no-cache build",
     "dev": "vp run --no-cache @pocketvideo/demo#dev",
+    "dev:webcodecs": "vp run --no-cache @pocketvideo/webcodecs-demo#dev",
     "render:image": "bun tools/render-skia/src/cli.ts image",
     "render:video": "bun tools/render-skia/src/cli.ts video",
     "test": "vp run -r --no-cache test",

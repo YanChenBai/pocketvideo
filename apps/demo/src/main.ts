@@ -71,6 +71,7 @@ app.innerHTML = `
           <span class="note-icon">⌁</span>
           <p><strong>No browser clock inside core.</strong> The UI only selects a frame; Composition evaluates the exact result.</p>
         </div>
+
       </aside>
     </main>
   </div>
@@ -189,6 +190,12 @@ window.addEventListener("keydown", (event) => {
   }
 });
 
-window.addEventListener("pagehide", () => oglLayout.dispose(), { once: true });
+window.addEventListener(
+  "pagehide",
+  () => {
+    oglLayout.dispose();
+  },
+  { once: true },
+);
 
 void render();

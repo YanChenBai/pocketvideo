@@ -27,6 +27,7 @@ PocketJS, built with TypeScript, Vite+, and Bun.
 - Renderer-agnostic, type-safe `TrackOutput` values.
 - A Node Canvas2D renderer powered by `skia-canvas` (not `@napi-rs/canvas`).
 - PNG frames, packed Raw RGBA frames, and direct H.264 MP4 encoding through FFmpeg.
+- Native browser Canvas-to-H.264 MP4 export with WebCodecs and Mediabunny.
 
 ## Repository structure
 
@@ -35,10 +36,12 @@ packages/
   core/       deterministic timeline and track protocol
   renderer-skia/ Node/Skia Canvas2D with PNG and RGBA output
   exporter-ffmpeg/ Raw RGBA to FFmpeg encoding pipeline
+  exporter-webcodecs/ browser Canvas to WebCodecs/Mediabunny
   video/      video and image tracks (planned)
   audio/      audio tracks and mixing (planned)
 apps/
   demo/       Canvas live preview and timeline inspector
+  webcodecs-demo/ standalone native browser MP4 export demo
 tools/
   render-skia/ export the same demo composition to PNG or MP4
 ```
@@ -93,6 +96,31 @@ bun run dev
 
 Open the local URL printed in the terminal. Use Space to play or pause, and the
 left and right arrow keys to step through frames.
+
+## Browser / WebCodecs export
+
+The web path uses WebCodecs + Mediabunny exclusively and does not include
+ffmpeg.wasm. Composition evaluates each frame, CanvasSource captures the current
+canvas, the browser's native `VideoEncoder` encodes H.264, and Mediabunny muxes MP4:
+
+```text
+Composition frame → Canvas 2D → WebCodecs VideoEncoder
+                  → Mediabunny MP4 muxer → MP4 Blob → Preview / Download
+```
+
+The standalone demo exports five seconds at 960 × 540 and 30 FPS, then exposes
+the resulting MP4 for in-page preview and download. Frames never leave the device:
+
+```bash
+bun run dev:webcodecs
+```
+
+WebCodecs requires HTTPS or localhost, and H.264 encoding support depends on the
+browser and device. The demo probes the exact encoder configuration before enabling
+export. `BufferTarget` keeps the complete result in memory and is intended for short
+clips; long-form export should use a streaming Mediabunny target later.
+
+> License note: PocketVideo source is MIT. Mediabunny is a separate MPL-2.0 dependency.
 
 ## Node / Skia export
 
@@ -162,6 +190,7 @@ build.
 - [ ] Vue Vapor and Solid component adapters
 - [ ] GSAP and Motion adapters
 - [x] Basic Raw RGBA/FFmpeg exporter
+- [x] Basic browser WebCodecs/Mediabunny exporter
 - [x] Basic Canvas live preview
 - [ ] Full development tools
 

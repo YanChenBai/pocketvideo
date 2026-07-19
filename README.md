@@ -26,6 +26,7 @@ Vite+ 和 Bun 构建。
 - 渲染器无关、类型安全的 `TrackOutput`。
 - 基于 `skia-canvas`（非 `@napi-rs/canvas`）的 Node Canvas2D 渲染器。
 - 单帧 PNG、Raw RGBA 帧，以及通过 FFmpeg stdin 直出的 H.264 MP4。
+- 基于 WebCodecs 与 Mediabunny 的浏览器原生 Canvas 到 H.264 MP4 导出。
 
 ## 仓库结构
 
@@ -34,10 +35,12 @@ packages/
   core/       确定性时间轴与轨道协议
   renderer-skia/ Node/Skia Canvas2D 与 PNG、RGBA 输出
   exporter-ffmpeg/ Raw RGBA 到 FFmpeg 的编码管道
+  exporter-webcodecs/ 浏览器 Canvas 到 WebCodecs/Mediabunny
   video/      视频与图片轨道（计划中）
   audio/      音频轨道与混音（计划中）
 apps/
   demo/       Canvas 实时预览与时间轴检查器
+  webcodecs-demo/ 独立浏览器原生 MP4 导出演示
 tools/
   render-skia/ 将同一 Demo composition 导出为 PNG 或 MP4
 ```
@@ -90,6 +93,30 @@ bun run dev
 ```
 
 打开终端中显示的本地地址即可预览。空格键控制播放或暂停，左右方向键用于逐帧。
+
+## 浏览器 / WebCodecs 导出
+
+网页端默认且仅使用 WebCodecs + Mediabunny，不包含 ffmpeg.wasm。Composition 按帧求值，
+CanvasSource 捕获当前 Canvas，浏览器原生 `VideoEncoder` 负责编码 H.264，Mediabunny
+负责封装 MP4：
+
+```text
+Composition frame → Canvas 2D → WebCodecs VideoEncoder
+                  → Mediabunny MP4 muxer → MP4 Blob → Preview / Download
+```
+
+独立 Demo 会导出 5 秒、960 × 540、30 FPS 的 MP4，并在页面内提供预览和下载。
+所有帧都留在本地设备，不会上传：
+
+```bash
+bun run dev:webcodecs
+```
+
+WebCodecs 需要 HTTPS 或 localhost，并且 H.264 编码能力取决于浏览器与设备。Demo
+启动时会检测实际编码配置，不支持时会给出明确提示。`BufferTarget` 会把完整视频保留
+在内存中，适合短片；长视频后续应切换 Mediabunny 的流式 Target。
+
+> 许可证提示：PocketVideo 源码为 MIT；依赖 Mediabunny 单独采用 MPL-2.0。
 
 ## Node / Skia 导出
 
@@ -154,6 +181,7 @@ bun run ready
 - [ ] Vue Vapor 与 Solid 组件适配器
 - [ ] GSAP 与 Motion 适配器
 - [x] Raw RGBA/FFmpeg 基础导出器
+- [x] 浏览器 WebCodecs/Mediabunny 基础导出器
 - [x] 基础 Canvas 实时预览
 - [ ] 完整开发工具
 
