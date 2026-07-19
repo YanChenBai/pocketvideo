@@ -15,9 +15,9 @@ function roundedRect(
 
 function renderBackground(context: CanvasRenderingContext2D): void {
   const background = context.createLinearGradient(0, 0, VIDEO_WIDTH, VIDEO_HEIGHT);
-  background.addColorStop(0, "#08070f");
-  background.addColorStop(0.5, "#0d0b18");
-  background.addColorStop(1, "#080a12");
+  background.addColorStop(0, "rgba(8, 7, 15, 0.76)");
+  background.addColorStop(0.5, "rgba(13, 11, 24, 0.38)");
+  background.addColorStop(1, "rgba(8, 10, 18, 0.68)");
   context.fillStyle = background;
   context.fillRect(0, 0, VIDEO_WIDTH, VIDEO_HEIGHT);
 
@@ -173,6 +173,8 @@ export function renderFrameToCanvas(
 
   for (const track of frame.tracks) {
     const layer = track.output;
+
+    if (layer.type === "ogl-aurora") continue;
 
     switch (layer.type) {
       case "background":

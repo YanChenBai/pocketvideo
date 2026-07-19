@@ -74,9 +74,11 @@ const frame = await composition.renderFrame(45);
 
 ## Interactive demo
 
-The repository includes a browser demo powered by the existing core. It draws
-Composition track outputs to Canvas and provides playback, frame stepping,
-timeline scrubbing, and an active-track inspector.
+The repository includes a browser demo powered by the existing core. It routes
+Composition outputs into independent layouts: an OGL/WebGL Aurora shader and a
+Canvas2D overlay for text, cards, and the timeline. Both layouts share the same
+deterministic playhead, with playback, frame stepping, timeline scrubbing, and
+an active-track inspector.
 
 ```bash
 bun install

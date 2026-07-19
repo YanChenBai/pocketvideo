@@ -17,6 +17,14 @@ export interface BackgroundLayer extends TrackOutput {
   readonly type: "background";
 }
 
+export interface AuroraLayer extends TrackOutput {
+  readonly type: "ogl-aurora";
+  readonly time: number;
+  readonly amplitude: number;
+  readonly blend: number;
+  readonly colorStops: readonly [string, string, string];
+}
+
 export interface OrbLayer extends TrackOutput {
   readonly type: "orb";
   readonly x: number;
@@ -51,7 +59,13 @@ export interface TimelineLayer extends TrackOutput {
   readonly frame: number;
 }
 
-export type DemoLayer = BackgroundLayer | CardLayer | IntroLayer | OrbLayer | TimelineLayer;
+export type DemoLayer =
+  | AuroraLayer
+  | BackgroundLayer
+  | CardLayer
+  | IntroLayer
+  | OrbLayer
+  | TimelineLayer;
 
 type Ease = (progress: number) => number;
 
@@ -110,17 +124,30 @@ function revealAnimation(delay = 0): AnimationDriver {
 
 const tracks: readonly Track<DemoLayer>[] = [
   {
-    id: "background",
+    id: "ogl-aurora-layout",
     startFrame: 0,
     durationInFrames: VIDEO_DURATION,
     layer: 0,
+    evaluate: ({ localTime }) => ({
+      type: "ogl-aurora",
+      time: localTime.toNumber(),
+      amplitude: 1,
+      blend: 0.52,
+      colorStops: ["#171D22", "#7CFF67", "#171D22"],
+    }),
+  },
+  {
+    id: "background",
+    startFrame: 0,
+    durationInFrames: VIDEO_DURATION,
+    layer: 1,
     evaluate: () => ({ type: "background" }),
   },
   {
     id: "ambient-orb",
     startFrame: 0,
     durationInFrames: VIDEO_DURATION,
-    layer: 1,
+    layer: 2,
     animations: [new AmbientDriver()],
     evaluate: ({ properties }) => ({
       type: "orb",

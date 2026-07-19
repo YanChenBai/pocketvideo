@@ -74,8 +74,10 @@ const frame = await composition.renderFrame(45);
 
 ## 交互式演示
 
-仓库内置了一个基于现有核心的网页 Demo。它将 Composition 的轨道输出绘制到
-Canvas，并提供播放、逐帧、拖拽时间轴和活动轨道检查器。
+仓库内置了一个基于现有核心的网页 Demo。它将 Composition 的轨道输出分发到
+独立布局：OGL/WebGL 布局绘制 Aurora Shader，Canvas2D 布局绘制文字、卡片和
+时间轴。两个布局由同一个确定性播放头控制，并提供播放、逐帧、拖拽时间轴和
+活动轨道检查器。
 
 ```bash
 bun install

@@ -6,6 +6,7 @@ import {
   VIDEO_HEIGHT,
   VIDEO_WIDTH,
 } from "./composition.ts";
+import { OglAuroraLayout } from "./layouts/ogl-aurora-layout.ts";
 import { renderFrameToCanvas } from "./renderer.ts";
 
 const app = document.querySelector<HTMLDivElement>("#app");
@@ -35,7 +36,8 @@ app.innerHTML = `
         </div>
 
         <div class="stage-frame">
-          <canvas id="preview" width="${VIDEO_WIDTH}" height="${VIDEO_HEIGHT}"></canvas>
+          <div id="ogl-layout" class="render-layer" aria-hidden="true"></div>
+          <canvas id="preview" class="render-layer" width="${VIDEO_WIDTH}" height="${VIDEO_HEIGHT}"></canvas>
         </div>
 
         <div class="transport">
@@ -81,9 +83,12 @@ function requiredElement<T extends Element>(selector: string): T {
 }
 
 const canvas = requiredElement<HTMLCanvasElement>("#preview");
+const oglLayoutHost = requiredElement<HTMLDivElement>("#ogl-layout");
 const canvasContext = canvas.getContext("2d");
 if (!canvasContext) throw new TypeError("Canvas 2D is unavailable.");
 const context: CanvasRenderingContext2D = canvasContext;
+const oglLayout = new OglAuroraLayout(VIDEO_WIDTH, VIDEO_HEIGHT);
+oglLayoutHost.appendChild(oglLayout.canvas);
 
 const playButton = requiredElement<HTMLButtonElement>("#play");
 const previousButton = requiredElement<HTMLButtonElement>("#previous");
@@ -108,6 +113,7 @@ async function render(): Promise<void> {
   const rendered = await demoComposition.renderFrame(currentFrame);
   if (version !== renderVersion) return;
 
+  oglLayout.renderFrame(rendered);
   renderFrameToCanvas(context, rendered);
 
   timeline.value = String(currentFrame);
@@ -182,5 +188,7 @@ window.addEventListener("keydown", (event) => {
     seek(currentFrame + 1);
   }
 });
+
+window.addEventListener("pagehide", () => oglLayout.dispose(), { once: true });
 
 void render();
