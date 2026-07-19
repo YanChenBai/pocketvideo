@@ -177,7 +177,7 @@ export function renderFrameToCanvas(
   for (const track of frame.tracks) {
     const layer = track.output;
 
-    if (layer.type === "ogl-aurora") continue;
+    if (layer.type === "aurora") continue;
 
     switch (layer.type) {
       case "background":

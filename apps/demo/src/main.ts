@@ -6,8 +6,11 @@ import {
   VIDEO_HEIGHT,
   VIDEO_WIDTH,
 } from "./composition.ts";
-import { OglAuroraLayout } from "./layouts/ogl-aurora-layout.ts";
-import { renderFrameToCanvas } from "./renderer.ts";
+import { PocketVideoSurface } from "@pocketvideo/vue-vapor";
+import VideoComposition from "./VideoComposition.vue";
+import videoCompositionSource from "./VideoComposition.vue?raw";
+import type { RenderedFrame } from "@pocketvideo/core";
+import type { DemoLayer } from "./composition.ts";
 
 const app = document.querySelector<HTMLDivElement>("#app");
 
@@ -36,7 +39,6 @@ app.innerHTML = `
         </div>
 
         <div class="stage-frame">
-          <div id="ogl-layout" class="render-layer" aria-hidden="true"></div>
           <canvas id="preview" class="render-layer" width="${VIDEO_WIDTH}" height="${VIDEO_HEIGHT}"></canvas>
         </div>
 
@@ -47,6 +49,20 @@ app.innerHTML = `
           <input id="timeline" type="range" min="0" max="${VIDEO_DURATION - 1}" value="0" aria-label="时间轴" />
           <output id="frame-output">000 / ${VIDEO_DURATION - 1}</output>
         </div>
+
+        <section class="source-panel" aria-labelledby="source-title">
+          <header class="source-heading">
+            <div>
+              <p class="kicker">VUE VAPOR SOURCE</p>
+              <h2 id="source-title">VideoComposition.vue</h2>
+            </div>
+            <div class="source-actions">
+              <span>${videoCompositionSource.split("\n").length} lines</span>
+              <button id="copy-source" class="copy-source" type="button">Copy source</button>
+            </div>
+          </header>
+          <pre class="source-code" tabindex="0"><code id="composition-source"></code></pre>
+        </section>
       </section>
 
       <aside class="inspector">
@@ -83,13 +99,22 @@ function requiredElement<T extends Element>(selector: string): T {
   return element;
 }
 
+const compositionSource = requiredElement<HTMLElement>("#composition-source");
+const copySourceButton = requiredElement<HTMLButtonElement>("#copy-source");
+compositionSource.textContent = videoCompositionSource.trim();
+copySourceButton.addEventListener("click", async () => {
+  await navigator.clipboard.writeText(videoCompositionSource);
+  copySourceButton.textContent = "Copied";
+  window.setTimeout(() => {
+    copySourceButton.textContent = "Copy source";
+  }, 1_500);
+});
+
 const canvas = requiredElement<HTMLCanvasElement>("#preview");
-const oglLayoutHost = requiredElement<HTMLDivElement>("#ogl-layout");
 const canvasContext = canvas.getContext("2d");
 if (!canvasContext) throw new TypeError("Canvas 2D is unavailable.");
 const context: CanvasRenderingContext2D = canvasContext;
-const oglLayout = new OglAuroraLayout(VIDEO_WIDTH, VIDEO_HEIGHT);
-oglLayoutHost.appendChild(oglLayout.canvas);
+let surface: PocketVideoSurface<RenderedFrame<DemoLayer>> | undefined;
 
 const playButton = requiredElement<HTMLButtonElement>("#play");
 const previousButton = requiredElement<HTMLButtonElement>("#previous");
@@ -114,8 +139,15 @@ async function render(): Promise<void> {
   const rendered = await demoComposition.renderFrame(currentFrame);
   if (version !== renderVersion) return;
 
-  oglLayout.renderFrame(rendered);
-  renderFrameToCanvas(context, rendered);
+  surface ??= new PocketVideoSurface({
+    component: VideoComposition,
+    context,
+    width: VIDEO_WIDTH,
+    height: VIDEO_HEIGHT,
+    fps: VIDEO_FPS,
+    initialData: rendered,
+  });
+  await surface.renderFrame(currentFrame, rendered);
 
   timeline.value = String(currentFrame);
   frameOutput.value = `${String(currentFrame).padStart(3, "0")} / ${VIDEO_DURATION - 1}`;
@@ -193,7 +225,8 @@ window.addEventListener("keydown", (event) => {
 window.addEventListener(
   "pagehide",
   () => {
-    oglLayout.dispose();
+    surface?.dispose();
+    demoComposition.dispose();
   },
   { once: true },
 );

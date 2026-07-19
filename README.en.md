@@ -28,6 +28,10 @@ PocketJS, built with TypeScript, Vite+, and Bun.
 - A Node Canvas2D renderer powered by `skia-canvas` (not `@napi-rs/canvas`).
 - PNG frames, packed Raw RGBA frames, and direct H.264 MP4 encoding through FFmpeg.
 - Native browser Canvas-to-H.264 MP4 export with WebCodecs and Mediabunny.
+- A self-owned Vue 3.6 Vapor SFC scene runtime with fixed-resolution, reactive frame updates.
+- A hierarchical Vue scene graph with local coordinates, inherited opacity, clipping,
+  filters, blend modes, and row/column layout.
+- Built-in shape, text, image, layout, effect, frame-range, and custom Canvas components.
 
 ## Repository structure
 
@@ -37,6 +41,7 @@ packages/
   renderer-skia/ Node/Skia Canvas2D with PNG and RGBA output
   exporter-ffmpeg/ Raw RGBA to FFmpeg encoding pipeline
   exporter-webcodecs/ browser Canvas to WebCodecs/Mediabunny
+  vue-vapor/ custom Vue Vapor SFC scene graph, Canvas surface, and built-ins
   video/      video and image tracks (planned)
   audio/      audio tracks and mixing (planned)
 apps/
@@ -83,11 +88,11 @@ const frame = await composition.renderFrame(45);
 
 ## Interactive demo
 
-The repository includes a browser demo powered by the existing core. It routes
-Composition outputs into independent layouts: an OGL/WebGL Aurora shader and a
-Canvas2D overlay for text, cards, and the timeline. Both layouts share the same
-deterministic playhead, with playback, frame stepping, timeline scrubbing, and
-an active-track inspector.
+The repository includes a browser demo powered by the existing core. The video
+content is authored as Vue SFCs and compiled in Vue 3.6 Vapor mode. Components
+write reactive properties into PocketVideo's own retained scene, and a Canvas
+surface draws that scene at a fixed resolution. Playback, frame stepping,
+timeline scrubbing, and the active-track inspector share one deterministic playhead.
 
 ```bash
 bun install
@@ -97,6 +102,58 @@ bun run dev
 Open the local URL printed in the terminal. Use Space to play or pause, and the
 left and right arrow keys to step through frames.
 
+### Vue Vapor SFC
+
+The Vite configuration forces every `<script setup>` SFC into Vapor mode:
+
+```ts
+import vue from "@vitejs/plugin-vue";
+
+export default {
+  plugins: [vue({ features: { vapor: true } })],
+};
+```
+
+Video components compose built-in primitives like regular Vue SFCs. Parents establish
+local coordinate systems, children use relative coordinates, and custom components can
+nest any of these elements:
+
+```vue
+<script setup lang="ts">
+import { VideoParagraph, VideoRect, VideoSequence, VideoStack } from "@pocketvideo/vue-vapor";
+
+defineProps<{ title: string; opacity: number }>();
+</script>
+
+<template>
+  <VideoSequence :from="30" :duration="90">
+    <VideoRect :x="72" :y="96" :width="420" :height="180" :opacity="opacity" :radius="24">
+      <VideoStack :x="24" :y="24" :width="372" :height="132" :gap="12">
+        <VideoParagraph :x="0" :y="0" :width="372" :height="52" :text="title" :font-size="42" />
+        <VideoRect :x="0" :y="0" :width="120" :height="4" fill="#8b5cf6" />
+      </VideoStack>
+    </VideoRect>
+  </VideoSequence>
+</template>
+```
+
+The built-ins are grouped by purpose:
+
+- Containers and layout: `VideoStage`, `VideoLayer`, `VideoGroup`, and `VideoStack`.
+- Shapes and text: `VideoRect`, `VideoCircle`, `VideoEllipse`, `VideoLine`, `VideoPath`,
+  `VideoText`, `VideoParagraph`, and `VideoProgress`.
+- Media and effects: `VideoImage`, `VideoClip`, `VideoFilter`, `VideoGrid`, and `VideoAurora`.
+- Timing and escape hatches: `VideoSequence` mounts content for a frame range, while
+  `VideoCanvas` accepts a draw callback for any additional Canvas2D primitive.
+
+These are fixed-resolution video scene elements, not a complete HTML/CSS reimplementation.
+An editor may use regular HTML for its chrome; content inside the video frame uses scene
+components so every rendered frame stays deterministic.
+
+`PocketVideoSurface` receives fixed `width`, `height`, and `fps` values. The same
+component scene can switch its target Canvas, so WebCodecs export does not need a
+second visual implementation.
+
 ## Browser / WebCodecs export
 
 The web path uses WebCodecs + Mediabunny exclusively and does not include
@@ -104,7 +161,7 @@ ffmpeg.wasm. Composition evaluates each frame, CanvasSource captures the current
 canvas, the browser's native `VideoEncoder` encodes H.264, and Mediabunny muxes MP4:
 
 ```text
-Composition frame → Canvas 2D → WebCodecs VideoEncoder
+Composition frame → Vue Vapor SFC → PocketVideo Scene → Canvas 2D → WebCodecs VideoEncoder
                   → Mediabunny MP4 muxer → MP4 Blob → Preview / Download
 ```
 
@@ -187,7 +244,8 @@ build.
 - [ ] Video and image tracks
 - [ ] Audio tracks and mixing
 - [x] Node/Skia Canvas2D rendering backend
-- [ ] Vue Vapor and Solid component adapters
+- [x] Custom Vue Vapor SFC scene runtime and built-in components
+- [ ] Solid component adapter
 - [ ] GSAP and Motion adapters
 - [x] Basic Raw RGBA/FFmpeg exporter
 - [x] Basic browser WebCodecs/Mediabunny exporter

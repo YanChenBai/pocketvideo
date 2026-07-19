@@ -144,11 +144,6 @@ h1 {
   height: 100%;
 }
 
-#ogl-layout {
-  z-index: 0;
-}
-
-#ogl-layout canvas,
 #preview {
   display: block;
   width: 100%;
@@ -169,6 +164,81 @@ h1 {
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 14px;
   background: rgba(18, 15, 26, 0.82);
+}
+
+.source-panel {
+  margin-top: 28px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  background: rgba(12, 10, 18, 0.92);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.24);
+}
+
+.source-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 18px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.source-heading .kicker {
+  margin-bottom: 5px;
+}
+
+.source-heading h2 {
+  margin: 0;
+  color: #d8d3e1;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.source-actions {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.source-actions span {
+  color: #655e71;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 10px;
+  text-transform: uppercase;
+}
+
+.copy-source {
+  min-width: 92px;
+  padding: 8px 11px;
+  border: 1px solid rgba(167, 139, 250, 0.2);
+  border-radius: 9px;
+  background: rgba(124, 58, 237, 0.1);
+  color: #b9a7e9;
+  cursor: pointer;
+  font-size: 11px;
+}
+
+.copy-source:hover {
+  border-color: rgba(167, 139, 250, 0.42);
+  background: rgba(124, 58, 237, 0.18);
+}
+
+.source-code {
+  max-height: 520px;
+  margin: 0;
+  overflow: auto;
+  padding: 22px;
+  color: #bbb4c7;
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  font-size: 12px;
+  line-height: 1.65;
+  tab-size: 2;
+  white-space: pre;
+}
+
+.source-code::selection,
+.source-code code::selection {
+  background: rgba(139, 92, 246, 0.35);
 }
 
 .play-button,
@@ -341,6 +411,44 @@ output {
 .core-note strong {
   color: #b9b2c6;
   font-weight: 600;
+}
+
+@media (max-width: 980px) {
+  .workspace {
+    grid-template-columns: 1fr;
+  }
+
+  .inspector {
+    margin-top: 0;
+  }
+}
+
+@media (max-width: 640px) {
+  .page-shell {
+    padding: 0 16px 32px;
+  }
+
+  .source-heading,
+  .source-actions {
+    align-items: flex-start;
+  }
+
+  .source-heading {
+    gap: 14px;
+  }
+
+  .source-actions {
+    flex-direction: column;
+    align-items: flex-end;
+  }
+
+  .transport {
+    grid-template-columns: repeat(3, 38px) minmax(80px, 1fr);
+  }
+
+  .transport output {
+    grid-column: 1 / -1;
+  }
 }
 
 .note-icon {

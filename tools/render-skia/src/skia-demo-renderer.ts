@@ -26,8 +26,7 @@ export class SkiaDemoRenderer {
     this.renderer.clear();
 
     const aurora = frame.tracks.find(
-      (track): track is typeof track & { output: AuroraLayer } =>
-        track.output.type === "ogl-aurora",
+      (track): track is typeof track & { output: AuroraLayer } => track.output.type === "aurora",
     )?.output;
 
     renderSkiaAurora(context, aurora);

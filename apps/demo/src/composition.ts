@@ -19,7 +19,7 @@ export interface BackgroundLayer extends TrackOutput {
 }
 
 export interface AuroraLayer extends TrackOutput {
-  readonly type: "ogl-aurora";
+  readonly type: "aurora";
   readonly time: number;
   readonly amplitude: number;
   readonly blend: number;
@@ -125,12 +125,12 @@ function revealAnimation(delay = 0): AnimationDriver {
 
 const tracks: readonly Track<DemoLayer>[] = [
   {
-    id: "ogl-aurora-layout",
+    id: "aurora-backdrop",
     startFrame: 0,
     durationInFrames: VIDEO_DURATION,
     layer: 0,
     evaluate: ({ localTime }) => ({
-      type: "ogl-aurora",
+      type: "aurora",
       time: localTime.toNumber(),
       amplitude: 0.82,
       blend: 0.68,

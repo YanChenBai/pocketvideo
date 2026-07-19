@@ -10,9 +10,12 @@
   },
   "dependencies": {
     "@pocketvideo/core": "workspace:*",
-    "@pocketvideo/exporter-webcodecs": "workspace:*"
+    "@pocketvideo/exporter-webcodecs": "workspace:*",
+    "@pocketvideo/vue-vapor": "workspace:*",
+    "vue": "3.6.0-rc.1"
   },
   "devDependencies": {
+    "@vitejs/plugin-vue": "6.0.8",
     "typescript": "^7.0.2",
     "vite-plus": "catalog:"
   }

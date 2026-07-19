@@ -1,4 +1,6 @@
 import "./style.css";
+import type { RenderedFrame } from "@pocketvideo/core";
+import { PocketVideoSurface } from "@pocketvideo/vue-vapor";
 import {
   exportCanvasVideo,
   inspectWebCodecsSupport,
@@ -10,7 +12,8 @@ import {
   EXPORT_WIDTH,
   webCodecsComposition,
 } from "./composition.ts";
-import { renderExportFrame } from "./renderer.ts";
+import type { ExportScene } from "./composition.ts";
+import VideoComposition from "./VideoComposition.vue";
 
 const app = document.querySelector<HTMLDivElement>("#app");
 if (!app) throw new TypeError("Missing #app element.");
@@ -109,6 +112,7 @@ const previewCanvas = requiredElement<HTMLCanvasElement>("#preview");
 const previewContext = previewCanvas.getContext("2d");
 if (!previewContext) throw new TypeError("Canvas 2D is unavailable.");
 const context: CanvasRenderingContext2D = previewContext;
+let surface: PocketVideoSurface<RenderedFrame<ExportScene>> | undefined;
 
 const playButton = requiredElement<HTMLButtonElement>("#play");
 const timeline = requiredElement<HTMLInputElement>("#timeline");
@@ -134,7 +138,15 @@ async function renderPreview(frame: number): Promise<void> {
   const version = ++renderVersion;
   const rendered = await webCodecsComposition.renderFrame(frame);
   if (version !== renderVersion) return;
-  renderExportFrame(context, rendered);
+  surface ??= new PocketVideoSurface({
+    component: VideoComposition,
+    context,
+    width: EXPORT_WIDTH,
+    height: EXPORT_HEIGHT,
+    fps: EXPORT_FPS,
+    initialData: rendered,
+  });
+  await surface.renderFrame(frame, rendered);
   timeline.value = String(frame);
   frameOutput.value = `${String(frame).padStart(3, "0")} / ${EXPORT_FRAMES - 1}`;
 }
@@ -190,6 +202,8 @@ exportButton.addEventListener("click", async () => {
   if (!exportContext) throw new TypeError("Export Canvas 2D is unavailable.");
 
   try {
+    if (!surface) throw new Error("The Vue Vapor surface has not mounted.");
+    surface.setContext(exportContext);
     const startedAt = performance.now();
     const blob = await exportCanvasVideo({
       canvas: exportCanvas,
@@ -200,7 +214,7 @@ exportButton.addEventListener("click", async () => {
       bitrate: 4_000_000,
       renderFrame: async ({ frame }) => {
         const rendered = await webCodecsComposition.renderFrame(frame);
-        renderExportFrame(exportContext, rendered);
+        await surface?.renderFrame(frame, rendered);
       },
       onProgress: ({ frame, progress: nextProgress }) => {
         progress.value = nextProgress;
@@ -224,6 +238,8 @@ exportButton.addEventListener("click", async () => {
     progressLabel.value = "ERROR";
     status.textContent = error instanceof Error ? error.message : "Video export failed.";
   } finally {
+    surface?.setContext(context);
+    await renderPreview(currentFrame);
     exportButton.disabled = false;
   }
 });
@@ -268,6 +284,7 @@ window.addEventListener(
   "pagehide",
   () => {
     if (resultUrl) URL.revokeObjectURL(resultUrl);
+    surface?.dispose();
     webCodecsComposition.dispose();
   },
   { once: true },

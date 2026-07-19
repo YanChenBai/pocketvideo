@@ -27,6 +27,9 @@ Vite+ 和 Bun 构建。
 - 基于 `skia-canvas`（非 `@napi-rs/canvas`）的 Node Canvas2D 渲染器。
 - 单帧 PNG、Raw RGBA 帧，以及通过 FFmpeg stdin 直出的 H.264 MP4。
 - 基于 WebCodecs 与 Mediabunny 的浏览器原生 Canvas 到 H.264 MP4 导出。
+- 自建的 Vue 3.6 Vapor SFC 场景运行时，支持固定分辨率和响应式逐帧更新。
+- 具有父子层级、相对坐标、透明度继承、裁剪、滤镜、混合模式与行列布局的 Vue 场景树。
+- 内建形状、文本、图片、布局、效果、时间区间与自定义 Canvas 绘制组件。
 
 ## 仓库结构
 
@@ -36,6 +39,7 @@ packages/
   renderer-skia/ Node/Skia Canvas2D 与 PNG、RGBA 输出
   exporter-ffmpeg/ Raw RGBA 到 FFmpeg 的编码管道
   exporter-webcodecs/ 浏览器 Canvas 到 WebCodecs/Mediabunny
+  vue-vapor/ 自建 Vue Vapor SFC 场景树、Canvas Surface 与内建组件
   video/      视频与图片轨道（计划中）
   audio/      音频轨道与混音（计划中）
 apps/
@@ -82,10 +86,10 @@ const frame = await composition.renderFrame(45);
 
 ## 交互式演示
 
-仓库内置了一个基于现有核心的网页 Demo。它将 Composition 的轨道输出分发到
-独立布局：OGL/WebGL 布局绘制 Aurora Shader，Canvas2D 布局绘制文字、卡片和
-时间轴。两个布局由同一个确定性播放头控制，并提供播放、逐帧、拖拽时间轴和
-活动轨道检查器。
+仓库内置了一个基于现有核心的网页 Demo。视频画面本身由 Vue SFC 编写，并通过
+Vue 3.6 Vapor 模式编译；组件把响应式属性写入 PocketVideo 自己维护的 retained
+scene，Canvas Surface 再按固定分辨率绘制。播放、逐帧、拖拽时间轴和活动轨道
+检查器仍由同一个确定性播放头控制。
 
 ```bash
 bun install
@@ -94,6 +98,55 @@ bun run dev
 
 打开终端中显示的本地地址即可预览。空格键控制播放或暂停，左右方向键用于逐帧。
 
+### Vue Vapor SFC
+
+Vite 配置会强制所有 `<script setup>` SFC 使用 Vapor 模式：
+
+```ts
+import vue from "@vitejs/plugin-vue";
+
+export default {
+  plugins: [vue({ features: { vapor: true } })],
+};
+```
+
+视频组件可以像普通 Vue SFC 一样组合内建原语。父元素建立局部坐标系，子元素使用
+相对坐标；自建组件可以继续嵌套这些元素：
+
+```vue
+<script setup lang="ts">
+import { VideoParagraph, VideoRect, VideoSequence, VideoStack } from "@pocketvideo/vue-vapor";
+
+defineProps<{ title: string; opacity: number }>();
+</script>
+
+<template>
+  <VideoSequence :from="30" :duration="90">
+    <VideoRect :x="72" :y="96" :width="420" :height="180" :opacity="opacity" :radius="24">
+      <VideoStack :x="24" :y="24" :width="372" :height="132" :gap="12">
+        <VideoParagraph :x="0" :y="0" :width="372" :height="52" :text="title" :font-size="42" />
+        <VideoRect :x="0" :y="0" :width="120" :height="4" fill="#8b5cf6" />
+      </VideoStack>
+    </VideoRect>
+  </VideoSequence>
+</template>
+```
+
+内建组件按用途分为：
+
+- 容器与布局：`VideoStage`、`VideoLayer`、`VideoGroup`、`VideoStack`。
+- 形状与文字：`VideoRect`、`VideoCircle`、`VideoEllipse`、`VideoLine`、
+  `VideoPath`、`VideoText`、`VideoParagraph`、`VideoProgress`。
+- 媒体与效果：`VideoImage`、`VideoClip`、`VideoFilter`、`VideoGrid`、`VideoAurora`。
+- 时间与扩展：`VideoSequence` 按帧挂载内容；`VideoCanvas` 接收绘制回调，可补充任意
+  Canvas2D 图元。
+
+这些组件是固定分辨率视频场景元素，不是浏览器 HTML/CSS 的完整复刻。需要 DOM 排版时
+可以在编辑器 UI 使用普通 HTML；进入视频画面的内容则使用场景组件，以保证逐帧结果稳定。
+
+`PocketVideoSurface` 在创建时接收固定的 `width`、`height` 与 `fps`。同一棵组件
+场景树可以切换目标 Canvas，因此 WebCodecs 导出无需重新实现一套画面渲染逻辑。
+
 ## 浏览器 / WebCodecs 导出
 
 网页端默认且仅使用 WebCodecs + Mediabunny，不包含 ffmpeg.wasm。Composition 按帧求值，
@@ -101,7 +154,7 @@ CanvasSource 捕获当前 Canvas，浏览器原生 `VideoEncoder` 负责编码 H
 负责封装 MP4：
 
 ```text
-Composition frame → Canvas 2D → WebCodecs VideoEncoder
+Composition frame → Vue Vapor SFC → PocketVideo Scene → Canvas 2D → WebCodecs VideoEncoder
                   → Mediabunny MP4 muxer → MP4 Blob → Preview / Download
 ```
 
@@ -178,7 +231,8 @@ bun run ready
 - [ ] 视频与图片轨道
 - [ ] 音频轨道与混音
 - [x] Node/Skia Canvas2D 渲染后端
-- [ ] Vue Vapor 与 Solid 组件适配器
+- [x] 自建 Vue Vapor SFC 场景运行时与内建组件
+- [ ] Solid 组件适配器
 - [ ] GSAP 与 Motion 适配器
 - [x] Raw RGBA/FFmpeg 基础导出器
 - [x] 浏览器 WebCodecs/Mediabunny 基础导出器
