@@ -10,8 +10,8 @@
   },
   "dependencies": {
     "@pocketvideo/core": "workspace:*",
-    "@pocketvideo/exporter-webcodecs": "workspace:*",
-    "@pocketvideo/vue-vapor": "workspace:*",
+    "@pocketvideo/exporter": "workspace:*",
+    "@pocketvideo/vue": "workspace:*",
     "vue": "3.6.0-rc.1"
   },
   "devDependencies": {

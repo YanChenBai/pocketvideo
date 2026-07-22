@@ -1,17 +1,6 @@
 <script setup lang="ts">
 import type { RenderedFrame } from "@pocketvideo/core";
-import {
-  VideoAurora,
-  VideoCircle,
-  VideoGrid,
-  VideoProgress,
-  VideoRect,
-  VideoSequence,
-  VideoStage,
-  VideoStack,
-  VideoText,
-  useVideoFrame,
-} from "@pocketvideo/vue-vapor";
+import { Canvas, Text, View, useVideoFrame } from "@pocketvideo/vue";
 import { computed } from "vue";
 import { EXPORT_FRAMES, EXPORT_HEIGHT, EXPORT_WIDTH, type ExportScene } from "./composition.ts";
 import PipelineStep from "./components/PipelineStep.vue";
@@ -21,161 +10,194 @@ const scene = computed(() => frame.value.data.tracks[0]?.output);
 const reveal = computed(() => 1 - (1 - Math.min(1, (scene.value?.progress ?? 0) * 7)) ** 3);
 const pipeline = [
   ["01", "Composition", "evaluate"],
-  ["02", "Vue Vapor SFC", "render"],
+  ["02", "Vue SFC", "render"],
   ["03", "H.264", "encode"],
   ["04", "MP4", "mux"],
 ] as const;
 </script>
 
 <template>
-  <VideoStage :width="EXPORT_WIDTH" :height="EXPORT_HEIGHT" fill="#070b16" fill-to="#10152a">
-    <VideoSequence :from="0" :duration="EXPORT_FRAMES">
-      <VideoAurora
-        :width="EXPORT_WIDTH"
-        :height="EXPORT_HEIGHT"
-        :phase="scene?.orbit ?? 0"
-        fill="rgba(91,111,255,0.48)"
-        fill-to="rgba(53,225,188,0.18)"
-        :opacity="0.9"
+  <Canvas ref="canvas" :width="EXPORT_WIDTH" :height="EXPORT_HEIGHT">
+    <View
+      :style="{
+        position: 'absolute',
+        width: EXPORT_WIDTH,
+        height: EXPORT_HEIGHT,
+        backgroundColor: '#070b16',
+        overflow: 'hidden',
+      }"
+    >
+      <View
+        :style="{
+          position: 'absolute',
+          left: 520 + Math.sin(scene?.orbit ?? 0) * 35,
+          top: -250,
+          width: 610,
+          height: 610,
+          borderRadius: 305,
+          backgroundColor: 'rgba(91,111,255,0.18)',
+          opacity: 0.9,
+        }"
       />
-      <VideoGrid
-        :width="EXPORT_WIDTH"
-        :height="EXPORT_HEIGHT"
-        :columns="40"
-        :rows="23"
-        :translate-x="((scene?.progress ?? 0) * 24) % 24"
-        line-color="rgba(131,146,193,0.045)"
+      <View
+        :style="{
+          position: 'absolute',
+          left: 36,
+          top: 34,
+          width: EXPORT_WIDTH - 72,
+          height: EXPORT_HEIGHT - 68,
+          borderRadius: 26,
+          backgroundColor: 'rgba(8,12,26,0.82)',
+          borderColor: 'rgba(167,180,255,0.17)',
+          borderWidth: 1,
+          zIndex: 5,
+        }"
       />
+      <Text
+        :style="{
+          position: 'absolute',
+          left: 70,
+          top: 68,
+          color: '#f4f6ff',
+          fontSize: 16,
+          fontWeight: 650,
+          zIndex: 10,
+        }"
+        >PocketVideo</Text
+      >
+      <Text
+        :style="{
+          position: 'absolute',
+          left: 194,
+          top: 70,
+          color: '#78829d',
+          fontSize: 11,
+          fontWeight: 500,
+          fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace',
+          zIndex: 10,
+        }"
+        >VUE SFC / NATIVE EXPORT</Text
+      >
+      <View
+        :style="{
+          position: 'absolute',
+          left: 808,
+          top: 72,
+          width: 8,
+          height: 8,
+          borderRadius: 4,
+          backgroundColor: '#35e1bc',
+          zIndex: 10,
+        }"
+      />
+      <Text
+        :style="{
+          position: 'absolute',
+          left: 826,
+          top: 70,
+          color: '#a6afc8',
+          fontSize: 11,
+          fontWeight: 500,
+          fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace',
+          zIndex: 10,
+        }"
+        >FRAME {{ String(scene?.frame ?? 0).padStart(3, "0") }}</Text
+      >
 
-      <VideoRect
-        :x="36"
-        :y="34"
-        :width="EXPORT_WIDTH - 72"
-        :height="EXPORT_HEIGHT - 68"
-        :radius="26"
-        fill="rgba(8,12,26,0.72)"
-        border-color="rgba(167,180,255,0.17)"
-        :border-width="1"
-        :z-index="5"
+      <View
+        :style="{
+          position: 'absolute',
+          left: 70,
+          top: 132,
+          width: 150,
+          height: 30,
+          borderRadius: 15,
+          backgroundColor: 'rgba(98,255,221,0.11)',
+          zIndex: 10,
+        }"
       />
-      <VideoText
-        :x="70"
-        :y="68"
-        text="PocketVideo"
-        color="#f4f6ff"
-        :font-size="16"
-        :font-weight="650"
-        :z-index="10"
-      />
-      <VideoText
-        :x="194"
-        :y="70"
-        text="VUE VAPOR / NATIVE EXPORT"
-        color="#78829d"
-        :font-size="11"
-        :font-weight="500"
-        font-family="ui-monospace, SFMono-Regular, Menlo, monospace"
-        :z-index="10"
-      />
-      <VideoCircle
-        :x="808"
-        :y="72"
-        :size="8"
-        fill="#35e1bc"
-        shadow-color="#35e1bc"
-        :shadow-blur="12"
-        :z-index="10"
-      />
-      <VideoText
-        :x="826"
-        :y="70"
-        :text="`FRAME ${String(scene?.frame ?? 0).padStart(3, '0')}`"
-        color="#a6afc8"
-        :font-size="11"
-        :font-weight="500"
-        font-family="ui-monospace, SFMono-Regular, Menlo, monospace"
-        :z-index="10"
-      />
+      <Text
+        :style="{
+          position: 'absolute',
+          left: 89,
+          top: 143,
+          color: '#76efd4',
+          fontSize: 10,
+          fontWeight: 600,
+          fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace',
+          zIndex: 11,
+        }"
+        >VUE SFC / HOST</Text
+      >
+      <Text
+        :style="{
+          position: 'absolute',
+          left: 70,
+          top: 190,
+          color: '#f5f7ff',
+          fontSize: 52,
+          fontWeight: 700,
+          opacity: reveal,
+          translateY: (1 - reveal) * 18,
+          zIndex: 12,
+        }"
+        >Components become</Text
+      >
+      <Text
+        :style="{
+          position: 'absolute',
+          left: 70,
+          top: 246,
+          color: '#95a5ff',
+          fontSize: 52,
+          fontWeight: 700,
+          opacity: reveal,
+          translateY: (1 - reveal) * 18,
+          zIndex: 12,
+        }"
+        >video, natively.</Text
+      >
+      <Text
+        :style="{
+          position: 'absolute',
+          left: 72,
+          top: 317,
+          color: '#8c96b0',
+          fontSize: 15,
+          zIndex: 12,
+        }"
+        >Vue SFC → View tree → Canvas → VideoEncoder → MP4</Text
+      >
 
-      <VideoRect
-        :x="70"
-        :y="132"
-        :width="174"
-        :height="30"
-        :radius="15"
-        fill="rgba(98,255,221,0.11)"
-        :z-index="10"
+      <View
+        :style="{
+          position: 'absolute',
+          left: 632,
+          top: 130,
+          width: 254,
+          height: 270,
+          borderRadius: 20,
+          backgroundColor: 'rgba(12,18,39,0.86)',
+          borderColor: 'rgba(141,158,219,0.18)',
+          borderWidth: 1,
+          zIndex: 20,
+        }"
       />
-      <VideoText
-        :x="89"
-        :y="143"
-        text="VUE SFC / VAPOR"
-        color="#76efd4"
-        :font-size="10"
-        :font-weight="600"
-        font-family="ui-monospace, SFMono-Regular, Menlo, monospace"
-        :z-index="11"
-      />
-      <VideoText
-        :x="70"
-        :y="190"
-        text="Components become"
-        color="#f5f7ff"
-        :font-size="52"
-        :font-weight="700"
-        :opacity="reveal"
-        :translate-y="(1 - reveal) * 18"
-        :z-index="12"
-      />
-      <VideoText
-        :x="70"
-        :y="246"
-        text="video, natively."
-        color="#95a5ff"
-        :font-size="52"
-        :font-weight="700"
-        :opacity="reveal"
-        :translate-y="(1 - reveal) * 18"
-        :z-index="12"
-      />
-      <VideoText
-        :x="72"
-        :y="317"
-        text="Vue SFC → Scene Graph → Canvas → VideoEncoder → MP4"
-        color="#8c96b0"
-        :font-size="15"
-        :z-index="12"
-      />
-
-      <VideoRect
-        :x="632"
-        :y="130"
-        :width="254"
-        :height="270"
-        :radius="20"
-        fill="rgba(12,18,39,0.86)"
-        border-color="rgba(141,158,219,0.18)"
-        :border-width="1"
-        :z-index="20"
-      />
-      <VideoText
-        :x="654"
-        :y="153"
-        text="RENDER PIPELINE"
-        color="#818dab"
-        :font-size="10"
-        :font-weight="600"
-        font-family="ui-monospace, SFMono-Regular, Menlo, monospace"
-        :z-index="30"
-      />
-      <VideoStack
-        :x="663"
-        :y="187"
-        :width="210"
-        :height="180"
-        direction="column"
-        :gap="0"
-        :z-index="30"
+      <Text
+        :style="{
+          position: 'absolute',
+          left: 654,
+          top: 153,
+          color: '#818dab',
+          fontSize: 10,
+          fontWeight: 600,
+          fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace',
+          zIndex: 30,
+        }"
+        >RENDER PIPELINE</Text
+      >
+      <View
+        :style="{ position: 'absolute', left: 663, top: 187, width: 210, height: 180, zIndex: 30 }"
       >
         <PipelineStep
           v-for="(step, index) in pipeline"
@@ -186,69 +208,94 @@ const pipeline = [
           :action="step[2]"
           :active="(scene?.progress ?? 0) * pipeline.length >= index"
         />
-      </VideoStack>
-      <VideoText
-        :x="654"
-        :y="367"
-        text="THROUGHPUT"
-        color="#66708c"
-        :font-size="9"
-        :font-weight="500"
-        font-family="ui-monospace, SFMono-Regular, Menlo, monospace"
-        :z-index="32"
-      />
-      <VideoText
-        :x="805"
-        :y="365"
-        :text="`${Math.round(24 + (scene?.pulse ?? 0) * 7)} FPS`"
-        color="#dfe5f6"
-        :font-size="12"
-        :font-weight="650"
-        font-family="ui-monospace, SFMono-Regular, Menlo, monospace"
-        :z-index="32"
-      />
+      </View>
+      <Text
+        :style="{
+          position: 'absolute',
+          left: 654,
+          top: 367,
+          color: '#66708c',
+          fontSize: 9,
+          fontWeight: 500,
+          fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace',
+          zIndex: 32,
+        }"
+        >THROUGHPUT</Text
+      >
+      <Text
+        :style="{
+          position: 'absolute',
+          left: 805,
+          top: 365,
+          color: '#dfe5f6',
+          fontSize: 12,
+          fontWeight: 650,
+          fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace',
+          zIndex: 32,
+        }"
+        >{{ Math.round(24 + (scene?.pulse ?? 0) * 7) }} FPS</Text
+      >
 
-      <VideoProgress
-        :x="70"
-        :y="448"
-        :width="816"
-        :height="4"
-        :progress="scene?.progress ?? 0"
-        fill="#37e3bd"
-        fill-to="#ad6cff"
-        :z-index="40"
+      <View
+        :style="{
+          position: 'absolute',
+          left: 70,
+          top: 448,
+          width: 816,
+          height: 4,
+          borderRadius: 2,
+          backgroundColor: 'rgba(255,255,255,0.10)',
+          zIndex: 40,
+        }"
+      >
+        <View
+          :style="{
+            position: 'absolute',
+            width: 816 * (scene?.progress ?? 0),
+            height: 4,
+            borderRadius: 2,
+            backgroundColor: '#37e3bd',
+          }"
+        />
+      </View>
+      <View
+        :style="{
+          position: 'absolute',
+          left: 65 + 816 * (scene?.progress ?? 0),
+          top: 445,
+          width: 10,
+          height: 10,
+          borderRadius: 5,
+          backgroundColor: '#eef2ff',
+          zIndex: 41,
+        }"
       />
-      <VideoCircle
-        :x="65 + 816 * (scene?.progress ?? 0)"
-        :y="445"
-        :size="10"
-        fill="#eef2ff"
-        shadow-color="#8094ff"
-        :shadow-blur="14"
-        :z-index="41"
-      />
-      <VideoText
-        :x="70"
-        :y="472"
-        text="00:00"
-        color="#68738f"
-        :font-size="9"
-        :font-weight="500"
-        font-family="ui-monospace, SFMono-Regular, Menlo, monospace"
-        :z-index="42"
-      />
-      <VideoText
-        :x="686"
-        :y="472"
-        :width="200"
-        :text="`00:05 · ${String(scene?.frame ?? 0).padStart(3, '0')}/${EXPORT_FRAMES - 1}`"
-        text-align="right"
-        color="#68738f"
-        :font-size="9"
-        :font-weight="500"
-        font-family="ui-monospace, SFMono-Regular, Menlo, monospace"
-        :z-index="42"
-      />
-    </VideoSequence>
-  </VideoStage>
+      <Text
+        :style="{
+          position: 'absolute',
+          left: 70,
+          top: 472,
+          color: '#68738f',
+          fontSize: 9,
+          fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace',
+          zIndex: 42,
+        }"
+        >00:00</Text
+      >
+      <Text
+        :style="{
+          position: 'absolute',
+          left: 686,
+          top: 472,
+          width: 200,
+          textAlign: 'right',
+          color: '#68738f',
+          fontSize: 9,
+          fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace',
+          zIndex: 42,
+        }"
+        >00:05 · {{ String(scene?.frame ?? 0).padStart(3, "0") }}/{{ EXPORT_FRAMES - 1 }}</Text
+      >
+    </View>
+  </Canvas>
 </template>

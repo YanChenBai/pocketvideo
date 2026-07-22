@@ -1,0 +1,32 @@
+{
+  "name": "@pocketvideo/exporter",
+  "version": "0.1.0",
+  "description": "Platform-specific video exporters for PocketVideo.",
+  "license": "MIT",
+  "files": [
+    "dist"
+  ],
+  "type": "module",
+  "exports": {
+    "./ffmpeg": "./dist/ffmpeg.mjs",
+    "./webcodecs": "./dist/webcodecs.mjs",
+    "./package.json": "./package.json"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "vp pack",
+    "test": "vp test",
+    "check": "vp check",
+    "prepublishOnly": "vp run build"
+  },
+  "dependencies": {
+    "mediabunny": "^1.50.9"
+  },
+  "devDependencies": {
+    "@types/node": "^26.1.1",
+    "typescript": "^7.0.2",
+    "vite-plus": "catalog:"
+  }
+}

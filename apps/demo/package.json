@@ -14,7 +14,7 @@
   },
   "dependencies": {
     "@pocketvideo/core": "workspace:*",
-    "@pocketvideo/vue-vapor": "workspace:*",
+    "@pocketvideo/vue": "workspace:*",
     "vue": "3.6.0-rc.1"
   },
   "devDependencies": {

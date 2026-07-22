@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { VideoRect, VideoText } from "@pocketvideo/vue-vapor";
+import { Text, View } from "@pocketvideo/vue";
 
 defineProps<{
   x: number;
@@ -13,31 +13,57 @@ defineProps<{
 </script>
 
 <template>
-  <VideoRect
-    :x="x"
-    :y="y"
-    :width="352"
-    :height="210"
-    :opacity="opacity"
-    :radius="24"
-    fill="rgba(20,17,33,0.86)"
-    border-color="rgba(255,255,255,0.10)"
-    :border-width="1"
-    shadow-color="rgba(0,0,0,0.34)"
-    :shadow-blur="22"
-    :z-index="20"
+  <View
+    :style="{
+      position: 'absolute',
+      left: x,
+      top: y,
+      width: 352,
+      height: 210,
+      opacity,
+      borderRadius: 24,
+      backgroundColor: 'rgba(20,17,33,0.86)',
+      borderColor: 'rgba(255,255,255,0.10)',
+      borderWidth: 1,
+      zIndex: 20,
+    }"
   >
-    <VideoRect :x="24" :y="24" :width="44" :height="8" :radius="4" :fill="accent" />
-    <VideoText
-      :x="24"
-      :y="64"
-      :text="label"
-      color="#8f899f"
-      :font-size="13"
-      :font-weight="600"
-      font-family="ui-monospace, SFMono-Regular, Menlo, monospace"
+    <View
+      :style="{
+        position: 'absolute',
+        left: 24,
+        top: 24,
+        width: 44,
+        height: 8,
+        borderRadius: 4,
+        backgroundColor: accent,
+      }"
     />
-    <VideoText :x="24" :y="100" :text="value" color="#f4f1fa" :font-size="30" :font-weight="650" />
-    <VideoText :x="24" :y="153" :text="detail" color="#9993a8" :font-size="16" />
-  </VideoRect>
+    <Text
+      :style="{
+        position: 'absolute',
+        left: 24,
+        top: 64,
+        color: '#8f899f',
+        fontSize: 13,
+        fontWeight: 600,
+        fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace',
+      }"
+      >{{ label }}</Text
+    >
+    <Text
+      :style="{
+        position: 'absolute',
+        left: 24,
+        top: 100,
+        color: '#f4f1fa',
+        fontSize: 30,
+        fontWeight: 650,
+      }"
+      >{{ value }}</Text
+    >
+    <Text :style="{ position: 'absolute', left: 24, top: 153, color: '#9993a8', fontSize: 16 }">{{
+      detail
+    }}</Text>
+  </View>
 </template>

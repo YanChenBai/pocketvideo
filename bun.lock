@@ -14,7 +14,7 @@
       "version": "0.1.0",
       "dependencies": {
         "@pocketvideo/core": "workspace:*",
-        "@pocketvideo/vue-vapor": "workspace:*",
+        "@pocketvideo/vue": "workspace:*",
         "vue": "3.6.0-rc.1",
       },
       "devDependencies": {
@@ -28,8 +28,8 @@
       "version": "0.1.0",
       "dependencies": {
         "@pocketvideo/core": "workspace:*",
-        "@pocketvideo/exporter-webcodecs": "workspace:*",
-        "@pocketvideo/vue-vapor": "workspace:*",
+        "@pocketvideo/exporter": "workspace:*",
+        "@pocketvideo/vue": "workspace:*",
         "vue": "3.6.0-rc.1",
       },
       "devDependencies": {
@@ -37,6 +37,22 @@
         "typescript": "^7.0.2",
         "vite-plus": "catalog:",
       },
+    },
+    "packages/canvas": {
+      "name": "@pocketvideo/canvas",
+      "version": "0.1.0",
+      "devDependencies": {
+        "@types/node": "^26.1.1",
+        "skia-canvas": "^3.0.8",
+        "typescript": "^7.0.2",
+        "vite-plus": "catalog:",
+      },
+      "peerDependencies": {
+        "skia-canvas": "^3.0.8",
+      },
+      "optionalPeers": [
+        "skia-canvas",
+      ],
     },
     "packages/core": {
       "name": "@pocketvideo/core",
@@ -48,58 +64,43 @@
         "vite-plus": "catalog:",
       },
     },
-    "packages/exporter-ffmpeg": {
-      "name": "@pocketvideo/exporter-ffmpeg",
-      "version": "0.1.0",
-      "devDependencies": {
-        "@types/node": "^26.1.1",
-        "typescript": "^7.0.2",
-        "vite-plus": "catalog:",
-      },
-    },
-    "packages/exporter-webcodecs": {
-      "name": "@pocketvideo/exporter-webcodecs",
+    "packages/exporter": {
+      "name": "@pocketvideo/exporter",
       "version": "0.1.0",
       "dependencies": {
         "mediabunny": "^1.50.9",
       },
       "devDependencies": {
-        "typescript": "^7.0.2",
-        "vite-plus": "catalog:",
-      },
-    },
-    "packages/renderer-skia": {
-      "name": "@pocketvideo/renderer-skia",
-      "version": "0.1.0",
-      "dependencies": {
-        "skia-canvas": "^3.0.8",
-      },
-      "devDependencies": {
         "@types/node": "^26.1.1",
         "typescript": "^7.0.2",
         "vite-plus": "catalog:",
       },
     },
-    "packages/vue-vapor": {
-      "name": "@pocketvideo/vue-vapor",
+    "packages/vue": {
+      "name": "@pocketvideo/vue",
       "version": "0.1.0",
       "dependencies": {
-        "vue": "3.6.0-rc.1",
+        "@pocketvideo/canvas": "workspace:*",
       },
       "devDependencies": {
         "@vitejs/plugin-vue": "6.0.8",
         "typescript": "^7.0.2",
         "vite-plus": "catalog:",
+        "vue": "3.6.0-rc.1",
+      },
+      "peerDependencies": {
+        "vue": "3.6.0-rc.1",
       },
     },
     "tools/render-skia": {
       "name": "@pocketvideo/render-skia",
       "version": "0.1.0",
       "dependencies": {
+        "@pocketvideo/canvas": "workspace:*",
         "@pocketvideo/core": "workspace:*",
         "@pocketvideo/demo": "workspace:*",
-        "@pocketvideo/exporter-ffmpeg": "workspace:*",
-        "@pocketvideo/renderer-skia": "workspace:*",
+        "@pocketvideo/exporter": "workspace:*",
+        "skia-canvas": "^3.0.8",
       },
       "devDependencies": {
         "@types/node": "^26.1.1",
@@ -228,19 +229,17 @@
 
     "@oxlint/plugins": ["@oxlint/plugins@1.73.0", "", {}, "sha512-OhgMQeMmZA0dcFcX4/priaJZWdFECxiClgq6mRX6aatZEcV9PbKC3P3/v8U1hVjviT1i5U+vR8lAtBV6m4FXAA=="],
 
+    "@pocketvideo/canvas": ["@pocketvideo/canvas@workspace:packages/canvas"],
+
     "@pocketvideo/core": ["@pocketvideo/core@workspace:packages/core"],
 
     "@pocketvideo/demo": ["@pocketvideo/demo@workspace:apps/demo"],
 
-    "@pocketvideo/exporter-ffmpeg": ["@pocketvideo/exporter-ffmpeg@workspace:packages/exporter-ffmpeg"],
-
-    "@pocketvideo/exporter-webcodecs": ["@pocketvideo/exporter-webcodecs@workspace:packages/exporter-webcodecs"],
+    "@pocketvideo/exporter": ["@pocketvideo/exporter@workspace:packages/exporter"],
 
     "@pocketvideo/render-skia": ["@pocketvideo/render-skia@workspace:tools/render-skia"],
 
-    "@pocketvideo/renderer-skia": ["@pocketvideo/renderer-skia@workspace:packages/renderer-skia"],
-
-    "@pocketvideo/vue-vapor": ["@pocketvideo/vue-vapor@workspace:packages/vue-vapor"],
+    "@pocketvideo/vue": ["@pocketvideo/vue@workspace:packages/vue"],
 
     "@pocketvideo/webcodecs-demo": ["@pocketvideo/webcodecs-demo@workspace:apps/webcodecs-demo"],
 

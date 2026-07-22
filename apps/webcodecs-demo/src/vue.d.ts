@@ -1,8 +1,8 @@
 /// <reference types="vite/client" />
 
 declare module "*.vue" {
-  import type { VaporComponent } from "vue";
+  import type { DefineComponent } from "vue";
 
-  const component: VaporComponent;
+  const component: DefineComponent;
   export default component;
 }

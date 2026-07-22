@@ -8,22 +8,28 @@ import {
 import { renderFrameToCanvas } from "@pocketvideo/demo/renderer";
 import type { RenderedFrame } from "@pocketvideo/core";
 import type { DemoLayer } from "@pocketvideo/demo/composition";
-import { SkiaRenderer } from "../../../packages/renderer-skia/src/index.ts";
+import {
+  canvasToPng,
+  canvasToRgba,
+  createSkiaCanvas,
+  type SkiaCanvasRenderingContext2D,
+} from "@pocketvideo/canvas/skia";
 
-type SkiaContext = SkiaRenderer["context"];
+type SkiaContext = SkiaCanvasRenderingContext2D;
 
 export class SkiaDemoRenderer {
-  readonly renderer = new SkiaRenderer({
+  readonly canvas = createSkiaCanvas({
     width: VIDEO_WIDTH,
     height: VIDEO_HEIGHT,
     gpu: false,
   });
+  readonly context = this.canvas.getContext("2d");
 
   async render(frameNumber: number): Promise<RenderedFrame<DemoLayer>> {
     const frame = await demoComposition.renderFrame(frameNumber);
-    const context = this.renderer.context;
+    const context = this.context;
 
-    this.renderer.clear();
+    context.clearRect(0, 0, VIDEO_WIDTH, VIDEO_HEIGHT);
 
     const aurora = frame.tracks.find(
       (track): track is typeof track & { output: AuroraLayer } => track.output.type === "aurora",
@@ -36,11 +42,11 @@ export class SkiaDemoRenderer {
   }
 
   png(): Promise<Buffer> {
-    return this.renderer.png();
+    return canvasToPng(this.canvas);
   }
 
   rgba(): Promise<Buffer> {
-    return this.renderer.rgba();
+    return canvasToRgba(this.canvas);
   }
 }
 

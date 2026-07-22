@@ -6,7 +6,7 @@ import {
   VIDEO_HEIGHT,
   VIDEO_WIDTH,
 } from "./composition.ts";
-import { PocketVideoSurface } from "@pocketvideo/vue-vapor";
+import { CanvasSurface } from "@pocketvideo/vue";
 import VideoComposition from "./VideoComposition.vue";
 import videoCompositionSource from "./VideoComposition.vue?raw";
 import type { RenderedFrame } from "@pocketvideo/core";
@@ -53,7 +53,7 @@ app.innerHTML = `
         <section class="source-panel" aria-labelledby="source-title">
           <header class="source-heading">
             <div>
-              <p class="kicker">VUE VAPOR SOURCE</p>
+              <p class="kicker">VUE HOST SOURCE</p>
               <h2 id="source-title">VideoComposition.vue</h2>
             </div>
             <div class="source-actions">
@@ -111,10 +111,7 @@ copySourceButton.addEventListener("click", async () => {
 });
 
 const canvas = requiredElement<HTMLCanvasElement>("#preview");
-const canvasContext = canvas.getContext("2d");
-if (!canvasContext) throw new TypeError("Canvas 2D is unavailable.");
-const context: CanvasRenderingContext2D = canvasContext;
-let surface: PocketVideoSurface<RenderedFrame<DemoLayer>> | undefined;
+let surface: CanvasSurface<RenderedFrame<DemoLayer>> | undefined;
 
 const playButton = requiredElement<HTMLButtonElement>("#play");
 const previousButton = requiredElement<HTMLButtonElement>("#previous");
@@ -139,12 +136,13 @@ async function render(): Promise<void> {
   const rendered = await demoComposition.renderFrame(currentFrame);
   if (version !== renderVersion) return;
 
-  surface ??= new PocketVideoSurface({
+  surface ??= new CanvasSurface({
     component: VideoComposition,
-    context,
+    canvas,
     width: VIDEO_WIDTH,
     height: VIDEO_HEIGHT,
     fps: VIDEO_FPS,
+    durationInFrames: VIDEO_DURATION,
     initialData: rendered,
   });
   await surface.renderFrame(currentFrame, rendered);

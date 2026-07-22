@@ -1,21 +1,15 @@
 <script setup lang="ts">
 import type { RenderedFrame } from "@pocketvideo/core";
-import {
-  VideoAurora,
-  VideoCircle,
-  VideoGrid,
-  VideoLayer,
-  VideoParagraph,
-  VideoProgress,
-  VideoStage,
-  VideoText,
-  useVideoFrame,
-} from "@pocketvideo/vue-vapor";
-import { computed } from "vue";
+import type { CanvasRef } from "@pocketvideo/vue";
+import { Canvas, Text, View, useFPS, useVideoFrame } from "@pocketvideo/vue";
+import { computed, useTemplateRef } from "vue";
 import { VIDEO_HEIGHT, VIDEO_WIDTH, type CardLayer, type DemoLayer } from "./composition.ts";
 import MetricCard from "./components/MetricCard.vue";
 
 const frame = useVideoFrame<RenderedFrame<DemoLayer>>();
+const fps = useFPS();
+const canvas = useTemplateRef<CanvasRef>("canvas");
+defineExpose({ canvas });
 const rendered = computed(() => frame.value.data);
 const layer = <T extends DemoLayer["type"]>(type: T) =>
   computed(
@@ -50,125 +44,160 @@ const cards = computed(() => {
 </script>
 
 <template>
-  <VideoStage :width="VIDEO_WIDTH" :height="VIDEO_HEIGHT" fill="#08070f" fill-to="#11172b">
-    <VideoLayer :width="VIDEO_WIDTH" :height="VIDEO_HEIGHT" :z-index="0">
-      <VideoAurora
-        :width="VIDEO_WIDTH"
-        :height="VIDEO_HEIGHT"
-        :phase="aurora?.time ?? 0"
-        fill="rgba(139,92,246,0.62)"
-        fill-to="rgba(34,211,238,0.22)"
-        :opacity="0.92"
+  <Canvas ref="canvas" :width="VIDEO_WIDTH" :height="VIDEO_HEIGHT">
+    <View
+      :style="{
+        position: 'absolute',
+        width: VIDEO_WIDTH,
+        height: VIDEO_HEIGHT,
+        backgroundColor: '#08070f',
+        overflow: 'hidden',
+      }"
+    >
+      <View
+        :style="{
+          position: 'absolute',
+          left: 650 + Math.sin(aurora?.time ?? 0) * 70,
+          top: -240,
+          width: 720,
+          height: 720,
+          borderRadius: 360,
+          backgroundColor: 'rgba(139,92,246,0.20)',
+          opacity: 0.92,
+        }"
       />
-      <VideoGrid
-        :width="VIDEO_WIDTH"
-        :height="VIDEO_HEIGHT"
-        :columns="20"
-        :rows="12"
-        line-color="rgba(167,139,250,0.08)"
-        :opacity="0.72"
+      <View
+        :style="{
+          position: 'absolute',
+          left: (orb?.x ?? 980) - (orb?.radius ?? 160),
+          top: (orb?.y ?? 156) - (orb?.radius ?? 160),
+          width: (orb?.radius ?? 160) * 2,
+          height: (orb?.radius ?? 160) * 2,
+          borderRadius: orb?.radius ?? 160,
+          backgroundColor: 'rgba(34,211,238,0.12)',
+          opacity: orb?.opacity ?? 0.4,
+          zIndex: 2,
+        }"
       />
-      <VideoCircle
-        :x="(orb?.x ?? 980) - (orb?.radius ?? 160)"
-        :y="(orb?.y ?? 156) - (orb?.radius ?? 160)"
-        :size="(orb?.radius ?? 160) * 2"
-        fill="rgba(139,92,246,0.32)"
-        fill-to="rgba(34,211,238,0.04)"
-        :opacity="orb?.opacity ?? 0.4"
-        shadow-color="rgba(139,92,246,0.7)"
-        :shadow-blur="42"
-        :z-index="2"
+
+      <Text
+        :style="{
+          position: 'absolute',
+          left: 72,
+          top: 86,
+          color: '#b79cff',
+          fontSize: 15,
+          fontWeight: 600,
+          fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace',
+          opacity: intro?.opacity ?? 0,
+          translateY: intro?.translateY ?? 0,
+          zIndex: 10,
+        }"
+        >{{ intro?.eyebrow ?? "" }}</Text
+      >
+      <Text
+        :style="{
+          position: 'absolute',
+          left: 68,
+          top: 128,
+          color: '#f8fafc',
+          fontSize: 62,
+          fontWeight: 700,
+          opacity: intro?.opacity ?? 0,
+          translateY: intro?.translateY ?? 0,
+          zIndex: 10,
+        }"
+        >{{ intro?.title ?? "" }}</Text
+      >
+      <Text
+        :style="{
+          position: 'absolute',
+          left: 72,
+          top: 211,
+          width: 760,
+          color: '#aaa4bb',
+          fontSize: 21,
+          opacity: intro?.opacity ?? 0,
+          translateY: intro?.translateY ?? 0,
+          zIndex: 10,
+        }"
+        >{{ intro?.description ?? "" }}</Text
+      >
+
+      <MetricCard
+        v-for="card in cards"
+        :key="card.index"
+        :x="72 + card.index * 382"
+        :y="306 + card.translateY"
+        :label="card.label"
+        :value="card.value"
+        :detail="card.detail"
+        :accent="card.accent"
+        :opacity="card.opacity"
       />
-    </VideoLayer>
 
-    <VideoText
-      :x="72"
-      :y="86"
-      :text="intro?.eyebrow ?? ''"
-      :opacity="intro?.opacity ?? 0"
-      :translate-y="intro?.translateY ?? 0"
-      color="#b79cff"
-      :font-size="15"
-      :font-weight="600"
-      font-family="ui-monospace, SFMono-Regular, Menlo, monospace"
-      :z-index="10"
-    />
-    <VideoText
-      :x="68"
-      :y="128"
-      :text="intro?.title ?? ''"
-      :opacity="intro?.opacity ?? 0"
-      :translate-y="intro?.translateY ?? 0"
-      color="#f8fafc"
-      :font-size="62"
-      :font-weight="700"
-      :z-index="10"
-    />
-    <VideoParagraph
-      :x="72"
-      :y="211"
-      :width="760"
-      :text="intro?.description ?? ''"
-      :opacity="intro?.opacity ?? 0"
-      :translate-y="intro?.translateY ?? 0"
-      color="#aaa4bb"
-      :font-size="21"
-      :max-lines="2"
-      :z-index="10"
-    />
-
-    <MetricCard
-      v-for="card in cards"
-      :key="card.index"
-      :x="72 + card.index * 382"
-      :y="306 + card.translateY"
-      :label="card.label"
-      :value="card.value"
-      :detail="card.detail"
-      :accent="card.accent"
-      :opacity="card.opacity"
-    />
-
-    <VideoProgress
-      :x="72"
-      :y="630"
-      :width="VIDEO_WIDTH - 144"
-      :height="4"
-      :progress="timeline?.progress ?? 0"
-      fill="#8b5cf6"
-      fill-to="#22d3ee"
-      :z-index="100"
-    />
-    <VideoCircle
-      :x="72 + (VIDEO_WIDTH - 144) * (timeline?.progress ?? 0) - 7"
-      :y="625"
-      :size="14"
-      fill="#f8fafc"
-      shadow-color="rgba(139,92,246,0.8)"
-      :shadow-blur="14"
-      :z-index="101"
-    />
-    <VideoText
-      :x="72"
-      :y="654"
-      :text="`FRAME ${String(timeline?.frame ?? 0).padStart(3, '0')}`"
-      color="#817a91"
-      :font-size="13"
-      :font-weight="500"
-      font-family="ui-monospace, SFMono-Regular, Menlo, monospace"
-      :z-index="100"
-    />
-    <VideoText
-      :x="VIDEO_WIDTH - 292"
-      :y="654"
-      :width="220"
-      text="10.0 SEC / 30 FPS"
-      text-align="right"
-      color="#817a91"
-      :font-size="13"
-      :font-weight="500"
-      font-family="ui-monospace, SFMono-Regular, Menlo, monospace"
-      :z-index="100"
-    />
-  </VideoStage>
+      <View
+        :style="{
+          position: 'absolute',
+          left: 72,
+          top: 630,
+          width: VIDEO_WIDTH - 144,
+          height: 4,
+          borderRadius: 2,
+          backgroundColor: 'rgba(255,255,255,0.12)',
+          zIndex: 100,
+        }"
+      >
+        <View
+          :style="{
+            position: 'absolute',
+            width: (VIDEO_WIDTH - 144) * (timeline?.progress ?? 0),
+            height: 4,
+            borderRadius: 2,
+            backgroundColor: '#8b5cf6',
+          }"
+        />
+      </View>
+      <View
+        :style="{
+          position: 'absolute',
+          left: 65 + (VIDEO_WIDTH - 144) * (timeline?.progress ?? 0),
+          top: 625,
+          width: 14,
+          height: 14,
+          borderRadius: 7,
+          backgroundColor: '#f8fafc',
+          zIndex: 101,
+        }"
+      />
+      <Text
+        :style="{
+          position: 'absolute',
+          left: 72,
+          top: 654,
+          color: '#817a91',
+          fontSize: 13,
+          fontWeight: 500,
+          fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace',
+          zIndex: 100,
+        }"
+        >FRAME {{ String(timeline?.frame ?? 0).padStart(3, "0") }}</Text
+      >
+      <Text
+        :style="{
+          position: 'absolute',
+          left: (canvas?.width ?? VIDEO_WIDTH) - 292,
+          top: 654,
+          width: 220,
+          textAlign: 'right',
+          color: '#817a91',
+          fontSize: 13,
+          fontWeight: 500,
+          fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace',
+          zIndex: 100,
+        }"
+        >10.0 SEC / {{ fps }} FPS</Text
+      >
+    </View>
+  </Canvas>
 </template>

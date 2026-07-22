@@ -11,7 +11,7 @@ PocketJS, built with TypeScript, Vite+, and Bun.
 
 ## Goals
 
-- Describe video scenes with Vue Vapor, Solid, or other declarative components.
+- Describe video scenes with Vue or other declarative components.
 - Render any frame deterministically without relying on a browser clock.
 - Keep the rendering core, audio tracks, video tracks, and encoders independent.
 - Support GSAP and Motion-style animations under a PocketVideo-owned playhead.
@@ -28,20 +28,18 @@ PocketJS, built with TypeScript, Vite+, and Bun.
 - A Node Canvas2D renderer powered by `skia-canvas` (not `@napi-rs/canvas`).
 - PNG frames, packed Raw RGBA frames, and direct H.264 MP4 encoding through FFmpeg.
 - Native browser Canvas-to-H.264 MP4 export with WebCodecs and Mediabunny.
-- A self-owned Vue 3.6 Vapor SFC scene runtime with fixed-resolution, reactive frame updates.
-- A hierarchical Vue scene graph with local coordinates, inherited opacity, clipping,
-  filters, blend modes, and row/column layout.
-- Built-in shape, text, image, layout, effect, frame-range, and custom Canvas components.
+- A Vue custom-renderer binding exposing the PocketJS-style `View`, `Text`, and `Image` primitives.
+- Standard Vue SFCs, reactive frame updates, styles, focus order, `onPress` bubbling, and keyboard input.
+- A special root `Canvas` and `CanvasSurface` that can switch between browser and Node canvases.
 
 ## Repository structure
 
 ```text
 packages/
   core/       deterministic timeline and track protocol
-  renderer-skia/ Node/Skia Canvas2D with PNG and RGBA output
-  exporter-ffmpeg/ Raw RGBA to FFmpeg encoding pipeline
-  exporter-webcodecs/ browser Canvas to WebCodecs/Mediabunny
-  vue-vapor/ custom Vue Vapor SFC scene graph, Canvas surface, and built-ins
+  canvas/     cross-platform Canvas contracts and optional Node/Skia subpath
+  exporter/   FFmpeg and WebCodecs platform exports
+  vue/        Vue host binding with View, Text, Image, styles, and base focus events
   video/      video and image tracks (planned)
   audio/      audio tracks and mixing (planned)
 apps/
@@ -89,8 +87,8 @@ const frame = await composition.renderFrame(45);
 ## Interactive demo
 
 The repository includes a browser demo powered by the existing core. The video
-content is authored as Vue SFCs and compiled in Vue 3.6 Vapor mode. Components
-write reactive properties into PocketVideo's own retained scene, and a Canvas
+content is authored as standard Vue SFCs. A custom renderer maps reactive components
+to PocketVideo's `View`, `Text`, and `Image` tree, and a Canvas
 surface draws that scene at a fixed resolution. Playback, frame stepping,
 timeline scrubbing, and the active-track inspector share one deterministic playhead.
 
@@ -102,57 +100,81 @@ bun run dev
 Open the local URL printed in the terminal. Use Space to play or pause, and the
 left and right arrow keys to step through frames.
 
-### Vue Vapor SFC
+### Vue SFCs and host primitives
 
-The Vite configuration forces every `<script setup>` SFC into Vapor mode:
+SFC compilation belongs to the application and may use the standard Vue plugin:
 
 ```ts
 import vue from "@vitejs/plugin-vue";
 
 export default {
-  plugins: [vue({ features: { vapor: true } })],
+  plugins: [vue()],
 };
 ```
 
-Video components compose built-in primitives like regular Vue SFCs. Parents establish
-local coordinate systems, children use relative coordinates, and custom components can
-nest any of these elements:
+Video components compose only three host primitives. Cards, rounded rectangles, and progress
+bars are expressed with `View` styles:
 
 ```vue
 <script setup lang="ts">
-import { VideoParagraph, VideoRect, VideoSequence, VideoStack } from "@pocketvideo/vue-vapor";
+import { Text, View } from "@pocketvideo/vue";
 
 defineProps<{ title: string; opacity: number }>();
 </script>
 
 <template>
-  <VideoSequence :from="30" :duration="90">
-    <VideoRect :x="72" :y="96" :width="420" :height="180" :opacity="opacity" :radius="24">
-      <VideoStack :x="24" :y="24" :width="372" :height="132" :gap="12">
-        <VideoParagraph :x="0" :y="0" :width="372" :height="52" :text="title" :font-size="42" />
-        <VideoRect :x="0" :y="0" :width="120" :height="4" fill="#8b5cf6" />
-      </VideoStack>
-    </VideoRect>
-  </VideoSequence>
+  <View
+    :style="{
+      position: 'absolute',
+      left: 72,
+      top: 96,
+      width: 420,
+      height: 180,
+      opacity,
+      borderRadius: 24,
+      backgroundColor: '#18142a',
+      padding: 24,
+    }"
+  >
+    <Text :style="{ color: '#fff', fontSize: 42 }">{{ title }}</Text>
+  </View>
 </template>
 ```
 
-The built-ins are grouped by purpose:
+`View` is the container and the only focusable primitive, `Text` displays text, and `Image`
+references an image. They are not a complete HTML/CSS reimplementation; the fixed style set is
+painted deterministically by the Canvas backend.
 
-- Containers and layout: `VideoStage`, `VideoLayer`, `VideoGroup`, and `VideoStack`.
-- Shapes and text: `VideoRect`, `VideoCircle`, `VideoEllipse`, `VideoLine`, `VideoPath`,
-  `VideoText`, `VideoParagraph`, and `VideoProgress`.
-- Media and effects: `VideoImage`, `VideoClip`, `VideoFilter`, `VideoGrid`, and `VideoAurora`.
-- Timing and escape hatches: `VideoSequence` mounts content for a frame range, while
-  `VideoCanvas` accepts a draw callback for any additional Canvas2D primitive.
-
-These are fixed-resolution video scene elements, not a complete HTML/CSS reimplementation.
-An editor may use regular HTML for its chrome; content inside the video frame uses scene
-components so every rendered frame stays deterministic.
-
-`PocketVideoSurface` receives fixed `width`, `height`, and `fps` values. The same
+`CanvasSurface` receives fixed `width`, `height`, and `fps` values. The same
 component scene can switch its target Canvas, so WebCodecs export does not need a
 second visual implementation.
+
+A composition uses the special root `<Canvas>` component, but its template ref exposes an
+ordinary Canvas interface. Vue's native `useTemplateRef`, `watchEffect`, and `onScopeDispose`
+remain available, and authoring code may choose Canvas2D, OGL, or any context supported by the
+host:
+
+```vue
+<script setup lang="ts">
+import type { CanvasRef } from "@pocketvideo/vue";
+import { Canvas, useFPS, useFrame } from "@pocketvideo/vue";
+import { useTemplateRef } from "vue";
+
+const canvas = useTemplateRef<CanvasRef>("canvas");
+const fps = useFPS();
+const frame = useFrame();
+</script>
+
+<template>
+  <Canvas ref="canvas" :width="1920" :height="1080" />
+</template>
+```
+
+The composables read the current composition scope instead of process-global mutable state, so
+parallel previews and exports may use different frame rates. `@pocketvideo/canvas` contains the
+internal Node/Web platform boundary.
+Node consumers opt into an ordinary Canvas through `@pocketvideo/canvas/skia`; browser entries do
+not load the native `skia-canvas` dependency.
 
 ## Browser / WebCodecs export
 
@@ -161,7 +183,7 @@ ffmpeg.wasm. Composition evaluates each frame, CanvasSource captures the current
 canvas, the browser's native `VideoEncoder` encodes H.264, and Mediabunny muxes MP4:
 
 ```text
-Composition frame → Vue Vapor SFC → PocketVideo Scene → Canvas 2D → WebCodecs VideoEncoder
+Composition frame → Vue SFC → View/Text/Image → Canvas 2D → WebCodecs VideoEncoder
                   → Mediabunny MP4 muxer → MP4 Blob → Preview / Download
 ```
 
@@ -244,7 +266,7 @@ build.
 - [ ] Video and image tracks
 - [ ] Audio tracks and mixing
 - [x] Node/Skia Canvas2D rendering backend
-- [x] Custom Vue Vapor SFC scene runtime and built-in components
+- [x] Vue custom renderer, Canvas surface, and base host components
 - [ ] Solid component adapter
 - [ ] GSAP and Motion adapters
 - [x] Basic Raw RGBA/FFmpeg exporter

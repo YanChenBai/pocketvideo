@@ -1,0 +1,39 @@
+{
+  "name": "@pocketvideo/vue",
+  "version": "0.1.0",
+  "description": "Vue host binding for PocketVideo.",
+  "license": "MIT",
+  "files": [
+    "dist"
+  ],
+  "type": "module",
+  "exports": {
+    ".": "./dist/index.mjs",
+    "./canvas": "./dist/canvas.mjs",
+    "./components": "./dist/components.mjs",
+    "./input": "./dist/input.mjs",
+    "./styles": "./dist/styles.mjs",
+    "./package.json": "./package.json"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "vp pack",
+    "test": "vp test",
+    "check": "vp check",
+    "prepublishOnly": "vp run build"
+  },
+  "dependencies": {
+    "@pocketvideo/canvas": "workspace:*"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "6.0.8",
+    "typescript": "^7.0.2",
+    "vite-plus": "catalog:",
+    "vue": "3.6.0-rc.1"
+  },
+  "peerDependencies": {
+    "vue": "3.6.0-rc.1"
+  }
+}

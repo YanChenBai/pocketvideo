@@ -7,10 +7,11 @@
     "build": "tsc --noEmit"
   },
   "dependencies": {
+    "@pocketvideo/canvas": "workspace:*",
     "@pocketvideo/core": "workspace:*",
     "@pocketvideo/demo": "workspace:*",
-    "@pocketvideo/exporter-ffmpeg": "workspace:*",
-    "@pocketvideo/renderer-skia": "workspace:*"
+    "@pocketvideo/exporter": "workspace:*",
+    "skia-canvas": "^3.0.8"
   },
   "devDependencies": {
     "@types/node": "^26.1.1",

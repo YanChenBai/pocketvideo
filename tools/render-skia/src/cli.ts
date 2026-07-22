@@ -7,7 +7,7 @@ import {
   VIDEO_HEIGHT,
   VIDEO_WIDTH,
 } from "@pocketvideo/demo/composition";
-import { RawVideoEncoder, resolveFfmpegPath } from "../../../packages/exporter-ffmpeg/src/index.ts";
+import { RawVideoEncoder, resolveFfmpegPath } from "@pocketvideo/exporter/ffmpeg";
 import { SkiaDemoRenderer } from "./skia-demo-renderer.ts";
 
 interface CliOptions {

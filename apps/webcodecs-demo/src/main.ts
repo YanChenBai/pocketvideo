@@ -1,10 +1,7 @@
 import "./style.css";
 import type { RenderedFrame } from "@pocketvideo/core";
-import { PocketVideoSurface } from "@pocketvideo/vue-vapor";
-import {
-  exportCanvasVideo,
-  inspectWebCodecsSupport,
-} from "../../../packages/exporter-webcodecs/src/index.ts";
+import { CanvasSurface } from "@pocketvideo/vue";
+import { exportCanvasVideo, inspectWebCodecsSupport } from "@pocketvideo/exporter/webcodecs";
 import {
   EXPORT_FPS,
   EXPORT_FRAMES,
@@ -99,7 +96,7 @@ app.innerHTML = `
       <section class="source-panel panel" aria-labelledby="source-title">
         <div class="source-heading">
           <div>
-            <span class="panel-kicker">VUE VAPOR SOURCE</span>
+            <span class="panel-kicker">VUE HOST SOURCE</span>
             <strong id="source-title">VideoComposition.vue</strong>
           </div>
           <div class="source-actions">
@@ -135,10 +132,7 @@ copySourceButton.addEventListener("click", async () => {
 });
 
 const previewCanvas = requiredElement<HTMLCanvasElement>("#preview");
-const previewContext = previewCanvas.getContext("2d");
-if (!previewContext) throw new TypeError("Canvas 2D is unavailable.");
-const context: CanvasRenderingContext2D = previewContext;
-let surface: PocketVideoSurface<RenderedFrame<ExportScene>> | undefined;
+let surface: CanvasSurface<RenderedFrame<ExportScene>> | undefined;
 
 const playButton = requiredElement<HTMLButtonElement>("#play");
 const timeline = requiredElement<HTMLInputElement>("#timeline");
@@ -164,12 +158,13 @@ async function renderPreview(frame: number): Promise<void> {
   const version = ++renderVersion;
   const rendered = await webCodecsComposition.renderFrame(frame);
   if (version !== renderVersion) return;
-  surface ??= new PocketVideoSurface({
+  surface ??= new CanvasSurface({
     component: VideoComposition,
-    context,
+    canvas: previewCanvas,
     width: EXPORT_WIDTH,
     height: EXPORT_HEIGHT,
     fps: EXPORT_FPS,
+    durationInFrames: EXPORT_FRAMES,
     initialData: rendered,
   });
   await surface.renderFrame(frame, rendered);
@@ -228,8 +223,8 @@ exportButton.addEventListener("click", async () => {
   if (!exportContext) throw new TypeError("Export Canvas 2D is unavailable.");
 
   try {
-    if (!surface) throw new Error("The Vue Vapor surface has not mounted.");
-    surface.setContext(exportContext);
+    if (!surface) throw new Error("The Vue canvas surface has not mounted.");
+    surface.setCanvas(exportCanvas);
     const startedAt = performance.now();
     const blob = await exportCanvasVideo({
       canvas: exportCanvas,
@@ -264,7 +259,7 @@ exportButton.addEventListener("click", async () => {
     progressLabel.value = "ERROR";
     status.textContent = error instanceof Error ? error.message : "Video export failed.";
   } finally {
-    surface?.setContext(context);
+    surface?.setCanvas(previewCanvas);
     await renderPreview(currentFrame);
     exportButton.disabled = false;
   }
